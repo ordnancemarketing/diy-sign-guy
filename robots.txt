@@ -1,41 +1,31 @@
 User-agent: *
 Allow: /
-Disallow: /office/
 
 User-agent: GPTBot
 Allow: /
-Disallow: /office/
 
 User-agent: OAI-SearchBot
 Allow: /
-Disallow: /office/
 
 User-agent: ChatGPT-User
 Allow: /
-Disallow: /office/
 
 User-agent: PerplexityBot
 Allow: /
-Disallow: /office/
 
 User-agent: ClaudeBot
 Allow: /
-Disallow: /office/
 
 User-agent: Claude-SearchBot
 Allow: /
-Disallow: /office/
 
 User-agent: Google-Extended
 Allow: /
-Disallow: /office/
 
 User-agent: CCBot
 Allow: /
-Disallow: /office/
 
 User-agent: meta-externalagent
 Allow: /
-Disallow: /office/
 
 Sitemap: https://diysignguy.com/sitemap.xml

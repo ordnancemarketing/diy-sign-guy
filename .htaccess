@@ -36,6 +36,13 @@ RewriteRule ^f/?$ https://diysignguy.com/ [R=301,L]
 # Old storefront root — crawled Feb 2026, never indexed
 RewriteRule ^shop(/.*)?$ https://diysignguy.com/sign-kits.html [R=301,L]
 
+# --- Missouri city pages retired 2026-10-11 (Dean: no Missouri in SEO/ads). ---
+# Full HTML saved off-server for future vendor-zip use. 301 to the closest non-MO page.
+RewriteRule ^kansas-city-mo-sign-kits\.html$ https://diysignguy.com/kansas-city-ks-sign-kits.html [R=301,L]
+RewriteRule ^liberty-mo-sign-kits\.html$ https://diysignguy.com/kansas-city-ks-sign-kits.html [R=301,L]
+RewriteRule ^springfield-mo-sign-kits\.html$ https://diysignguy.com/sign-kits.html [R=301,L]
+RewriteRule ^maryland-heights-mo-sign-kits\.html$ https://diysignguy.com/sign-kits.html [R=301,L]
+
 # --- Security headers ---
 <IfModule mod_headers.c>
   Header always set X-Content-Type-Options "nosniff"
