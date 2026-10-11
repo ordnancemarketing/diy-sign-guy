@@ -307,6 +307,8 @@ gtag('config', 'G-69T7JQ3J6S');
 @media(max-width:900px){.dealerbar{flex-wrap:wrap;}.dealerbar a.bookcall{margin-right:0;}}
 </style>
 <script src="/js/book-call.js?v=1" defer></script>
+<link rel="stylesheet" href="/css/leadform.css?v=1">
+<script src="/js/leadform.js?v=1" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to main content</a>
@@ -331,42 +333,37 @@ gtag('config', 'G-69T7JQ3J6S');
   <p class="lead" style="margin-bottom:26px;">Tell me about your project and I'll answer with straight guidance and a written quote &mdash; from the guy who actually builds it.</p>
   <div class="contactline" style="display:flex;gap:12px 22px;flex-wrap:wrap;align-items:center;margin-bottom:22px;">
     <a class="btn" href="mailto:dean@diysignguy.com?subject=Book%20a%20call%20with%20Dean" data-book-call>&#128197; Book a Call with Dean</a>
-    <span style="color:#c3ccd9;">Email Dean directly: <a href="mailto:dean@diysignguy.com" style="color:var(--gold);font-weight:700;">dean@diysignguy.com</a></span>
   </div>
-  <div class="privacy">&#128274; I do not sell your information. All your information you give me is kept private. I will not sell your information.</div>
   <div class="formgrid">
-    <form class="qform" id="contact-form" action="https://formsubmit.co/53a268911bc8cb65aa67024778f3e366" method="POST">
+    <form class="qform leadform" id="contact-form" action="https://formsubmit.co/53a268911bc8cb65aa67024778f3e366" method="POST" enctype="multipart/form-data">
       <input type="hidden" name="_subject" value="New DIY Sign Guy project inquiry">
-      <input type="hidden" name="_captcha" value="true"><input type="hidden" name="_cc" value="meadowsigns@mail.grokbot.com">
+      <input type="hidden" name="_captcha" value="true">
+      <input type="hidden" name="_cc" value="meadowsigns@mail.grokbot.com">
       <input type="hidden" name="_next" value="https://diysignguy.com/thank-you.html">
       <input type="hidden" name="_template" value="table">
       <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true">
       <div class="frow">
         <div class="field"><label for="f-name">Your name *</label><input id="f-name" type="text" name="full_name" required autocomplete="name"></div>
-        <div class="field"><label for="f-biz">Business name *</label><input id="f-biz" type="text" name="business_name" required autocomplete="organization"></div>
-      </div>
-      <div class="frow">
         <div class="field"><label for="f-email">Email address *</label><input id="f-email" type="email" name="email" required autocomplete="email"></div>
-        <div class="field"><label for="f-state">What state are you in? *</label><select id="f-state" name="state" required autocomplete="address-level1"><option value="">Select your state</option><option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option><option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option><option>Florida</option><option>Georgia</option><option>Hawaii</option><option>Idaho</option><option>Illinois</option><option>Indiana</option><option>Iowa</option><option>Kansas</option><option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option><option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option><option>Missouri</option><option>Montana</option><option>Nebraska</option><option>Nevada</option><option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option><option>New York</option><option>North Carolina</option><option>North Dakota</option><option>Ohio</option><option>Oklahoma</option><option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option><option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option><option>Vermont</option><option>Virginia</option><option>Washington</option><option>West Virginia</option><option>Wisconsin</option><option>Wyoming</option><option>Washington DC</option></select></div>
       </div>
+      <div class="field"><label for="f-phone">Phone <span class="opt">(optional)</span></label><input id="f-phone" type="tel" name="phone" autocomplete="tel"></div>
+      <div class="field"><label for="f-site">Install site address *</label><input id="f-site" type="text" name="install_address" required autocomplete="street-address" placeholder="Street, City, State ZIP"></div>
+      <label class="checkrow"><input type="checkbox" name="mailing_same_as_install" value="Yes" checked> Mailing address same as install address</label>
+      <div class="field mailwrap"><label for="f-mail">Mailing address <span class="opt">(optional)</span></label><input id="f-mail" type="text" name="mailing_address" autocomplete="off" placeholder="Street, City, State ZIP"></div>
       <div class="frow">
-        <div class="field"><label for="f-phone">Phone number (optional)</label><input id="f-phone" type="tel" name="phone" autocomplete="tel" aria-describedby="form-help"></div>
-        <div class="field"><label for="f-perm">Is it okay to call or text?<span id="f-perm-star" hidden> *</span></label>
-          <select id="f-perm" name="contact_permission" aria-describedby="f-perm-note">
-            <option value="">Select an option</option>
-            <option value="call-or-text">Yes — call or text</option>
-            <option value="call-only">Call only</option>
-            <option value="text-only">Text only</option>
-            <option value="email-only">No — email only</option>
-          </select>
-          <p class="fnote" id="f-perm-note" role="status"></p>
-        </div>
+        <div class="field"><label for="f-need">What do you need? *</label><select id="f-need" name="what_do_you_need" required><option value="">Select one</option><option>Lighted cabinet sign</option><option>Channel letters</option><option>LED message center</option><option>Monument sign</option><option>Pole/pylon sign</option><option>DIY sign kit / panels</option><option>Print / graphics</option><option>Not sure yet</option></select></div>
+        <div class="field"><label for="f-size">Rough size, if known <span class="opt">(optional)</span></label><input id="f-size" type="text" name="rough_size" placeholder="e.g. 4 ft x 8 ft"></div>
       </div>
-      <div class="field"><label for="f-proj">What is your project? *</label>
-        <textarea id="f-proj" name="project_details" required placeholder="Tell me what you're trying to do: the type of sign or graphics, approximate sizes, whether it's illuminated, what you already have, and any project or install details that help."></textarea>
-      </div>
+      <div class="field"><label for="f-msg">Message</label><textarea id="f-msg" name="message" placeholder="Wall or pole mounted? Lit or unlit? Single or double sided? Replacing an old sign? Anything helps."></textarea></div>
+      <fieldset class="files"><legend>Upload site photos or logo <span class="opt">(optional)</span></legend>
+        <input type="file" name="attachment_1" accept="image/*,.pdf" aria-label="Photo or logo file 1">
+        <input type="file" name="attachment_2" accept="image/*,.pdf" aria-label="Photo or logo file 2">
+        <input type="file" name="attachment_3" accept="image/*,.pdf" aria-label="Photo or logo file 3">
+        <p class="hint"><b>Tip:</b> Stand back from the road and include something for scale, like a door or a car. Up to 3 files (photos or PDF), 10 MB total.</p>
+        <p class="fileerr" role="status" aria-live="polite"></p>
+      </fieldset>
       <button type="submit" class="btn">Send My Project Details</button>
-      <div class="fine" id="form-help">Required fields marked *. If you enter a phone number, please choose a call/text preference.</div>
+      <p class="privline">&#128274; Your information stays private. We never sell or share it.</p>
     </form>
     <div class="helppanel">
       <h2>What Happens Next</h2>
@@ -376,7 +373,6 @@ gtag('config', 'G-69T7JQ3J6S');
       <h2 style="margin-top:18px;">Rather Talk It Through?</h2>
       <p>Book a quick call with Dean and walk through your sign, sizes and install plan together.</p>
       <p><a class="btn btn-sm" href="mailto:dean@diysignguy.com?subject=Book%20a%20call%20with%20Dean" data-book-call>&#128197; Book a Call with Dean</a></p>
-      <p>Or email <a href="mailto:dean@diysignguy.com" style="color:var(--gold);">dean@diysignguy.com</a></p>
       <h2 style="margin-top:18px;">Nationwide</h2>
       <p>Kits, graphics and hardware ship across the United States. We work by email wherever you are.</p>
     </div>
@@ -388,29 +384,6 @@ gtag('config', 'G-69T7JQ3J6S');
   <div>Nationwide Shipping<small>Across the United States</small></div>
   <div>Real Guidance<small>From the guy who builds it</small></div>
 </div>
-<script>
-(function(){
-var p=document.getElementById('f-phone'),m=document.getElementById('f-perm'),
-    star=document.getElementById('f-perm-star'),note=document.getElementById('f-perm-note'),was=null;
-function s(){
-  var need=!!p.value.trim();
-  if(need===was)return;
-  was=need;
-  if(need){
-    m.setAttribute('required','required');
-    m.setAttribute('aria-required','true');
-    star.hidden=false;
-    note.textContent='Call or text preference is now required because you entered a phone number.';
-  }else{
-    m.removeAttribute('required');
-    m.setAttribute('aria-required','false');
-    star.hidden=true;
-    note.textContent='';
-  }
-}
-p.addEventListener('input',s);p.addEventListener('change',s);s();
-})();
-</script>
 
 <div class="ctaband"><h2>Ready to get your written quote?</h2><p>Every kit is prepared to order. Tell us about your project and we'll answer with a straight, written quote.</p><a class="btn" href="contact.html">Contact DIY Sign Guy</a></div>
 </main>

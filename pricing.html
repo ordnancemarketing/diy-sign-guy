@@ -311,6 +311,8 @@ gtag('config', 'G-69T7JQ3J6S');
 @media(max-width:900px){.dealerbar{flex-wrap:wrap;}.dealerbar a.bookcall{margin-right:0;}}
 </style>
 <script src="/js/book-call.js?v=1" defer></script>
+<link rel="stylesheet" href="/css/leadform.css?v=1">
+<script src="/js/leadform.js?v=1" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to main content</a>
@@ -351,9 +353,10 @@ gtag('config', 'G-69T7JQ3J6S');
   <span class="kick">Start Here</span>
   <h2>Request Your <span class="lit">Written Quote</span></h2>
   <div class="formgrid" style="margin-top:24px;">
-    <form class="qform" id="contact-form" action="https://formsubmit.co/53a268911bc8cb65aa67024778f3e366" method="POST">
+    <form class="qform leadform" id="contact-form" action="https://formsubmit.co/53a268911bc8cb65aa67024778f3e366" method="POST" enctype="multipart/form-data">
       <input type="hidden" name="_subject" value="New sign quote request - Get a Quote page">
-      <input type="hidden" name="_captcha" value="true"><input type="hidden" name="_cc" value="meadowsigns@mail.grokbot.com">
+      <input type="hidden" name="_captcha" value="true">
+      <input type="hidden" name="_cc" value="meadowsigns@mail.grokbot.com">
       <input type="hidden" name="_next" value="https://diysignguy.com/thank-you.html">
       <input type="hidden" name="_template" value="table">
       <input type="hidden" name="from_page" value="Get a Quote (pricing.html)">
@@ -362,16 +365,29 @@ gtag('config', 'G-69T7JQ3J6S');
         <div class="field"><label for="q-name">Your name *</label><input id="q-name" type="text" name="full_name" required autocomplete="name"></div>
         <div class="field"><label for="q-email">Email address *</label><input id="q-email" type="email" name="email" required autocomplete="email"></div>
       </div>
-      <div class="field"><label for="q-size">Roughly how wide is the sign? *</label><select id="q-size" name="sign_size" required><option value="">Select a size</option><option>Not sure yet - help me figure it out</option><option>Up to 4 feet wide</option><option>4 to 6 feet wide</option><option>6 to 8 feet wide</option><option>8 to 12 feet wide</option><option>Over 12 feet, or a pole / pylon sign</option></select></div>
-      <div class="field"><label for="q-note">Tell me about your project *</label><textarea id="q-note" name="project_details" required placeholder="Wall or pole mounted? Lit or unlit? Single or double sided? Frame depth? The city and state it ships to? Anything helps."></textarea></div>
+      <div class="field"><label for="q-phone">Phone <span class="opt">(optional)</span></label><input id="q-phone" type="tel" name="phone" autocomplete="tel"></div>
+      <div class="field"><label for="q-site">Install site address *</label><input id="q-site" type="text" name="install_address" required autocomplete="street-address" placeholder="Street, City, State ZIP"></div>
+      <label class="checkrow"><input type="checkbox" name="mailing_same_as_install" value="Yes" checked> Mailing address same as install address</label>
+      <div class="field mailwrap"><label for="q-mail">Mailing address <span class="opt">(optional)</span></label><input id="q-mail" type="text" name="mailing_address" autocomplete="off" placeholder="Street, City, State ZIP"></div>
+      <div class="frow">
+        <div class="field"><label for="q-need">What do you need? *</label><select id="q-need" name="what_do_you_need" required><option value="">Select one</option><option>Lighted cabinet sign</option><option>Channel letters</option><option>LED message center</option><option>Monument sign</option><option>Pole/pylon sign</option><option>DIY sign kit / panels</option><option>Print / graphics</option><option>Not sure yet</option></select></div>
+        <div class="field"><label for="q-size">Rough size, if known <span class="opt">(optional)</span></label><input id="q-size" type="text" name="rough_size" placeholder="e.g. 4 ft x 8 ft"></div>
+      </div>
+      <div class="field"><label for="q-msg">Message</label><textarea id="q-msg" name="message" placeholder="Wall or pole mounted? Lit or unlit? Single or double sided? Replacing an old sign? Anything helps."></textarea></div>
+      <fieldset class="files"><legend>Upload site photos or logo <span class="opt">(optional)</span></legend>
+        <input type="file" name="attachment_1" accept="image/*,.pdf" aria-label="Photo or logo file 1">
+        <input type="file" name="attachment_2" accept="image/*,.pdf" aria-label="Photo or logo file 2">
+        <input type="file" name="attachment_3" accept="image/*,.pdf" aria-label="Photo or logo file 3">
+        <p class="hint"><b>Tip:</b> Stand back from the road and include something for scale, like a door or a car. Up to 3 files (photos or PDF), 10 MB total.</p>
+        <p class="fileerr" role="status" aria-live="polite"></p>
+      </fieldset>
       <button type="submit" class="btn">Get My Custom Quote</button>
-      <div class="fine">Required fields marked *. Your message comes straight to Dean &mdash; not a sales team. I do not sell your information. Want to send photos or a logo? Use the <a href="contact.html" style="color:var(--blue);">full contact form</a> or reply to Dean&rsquo;s email.</div>
+      <p class="privline">&#128274; Your information stays private. We never sell or share it.</p>
     </form>
     <div class="helppanel">
       <h3>Rather Talk It Through?</h3>
       <p>Book a quick call with Dean and walk through your sign, sizes and install plan together.</p>
       <p><a class="btn btn-sm" href="mailto:dean@diysignguy.com?subject=Book%20a%20call%20with%20Dean" data-book-call>&#128197; Book a Call with Dean</a></p>
-      <p>Or email <a href="mailto:dean@diysignguy.com" style="color:var(--gold);">dean@diysignguy.com</a></p>
       <h3 style="margin-top:18px;">What Happens Next</h3>
       <p>Dean reviews your details and sends back a straight, written quote for your kit, shipped to your door. If anything is unclear, he&rsquo;ll ask before he quotes.</p>
     </div>

@@ -1,0 +1,15 @@
+/* Shared lead / quote form styles (contact, Get a Quote, city pages) */
+.leadform .field .opt{font-weight:500;color:var(--muted,#9aa6b5);}
+.leadform .checkrow{display:flex;align-items:flex-start;gap:10px;font-size:.9rem;color:#e6ebf2;cursor:pointer;}
+.leadform .checkrow input{width:20px;height:20px;margin-top:2px;flex:none;accent-color:#2f95ff;}
+.leadform .hint{font-size:.78rem;color:var(--muted,#9aa6b5);margin:2px 0 0;line-height:1.5;}
+.leadform .hint b{color:#cfd7e2;font-weight:600;}
+.leadform fieldset.files{border:1px dashed #3a4352;border-radius:12px;padding:14px 16px 12px;margin:0;display:grid;gap:10px;min-width:0;}
+.leadform fieldset.files legend{font-size:.82rem;font-weight:700;color:#e6ebf2;padding:0 6px;}
+.leadform input[type=file]{width:100%;font-size:.86rem;color:#c3ccd9;padding:8px;border:1px solid #2a2f38;border-radius:9px;background:#0a0b0e;}
+.leadform input[type=file]::file-selector-button{font:600 .82rem 'Inter',sans-serif;background:#1b2433;color:#fff;border:1px solid #2c3b52;border-radius:7px;padding:7px 12px;margin-right:10px;cursor:pointer;}
+.leadform .fileerr{color:#ff8a8a;font-size:.8rem;margin:0;}
+.leadform .fileerr:empty{display:none;}
+.leadform .privline{font-size:.82rem;color:#cfe4ff;display:flex;gap:8px;align-items:center;justify-content:center;text-align:center;margin:-4px 0 0;}
+.leadform .btn{width:100%;}
+@media(max-width:600px){.leadform{padding:20px !important;}}

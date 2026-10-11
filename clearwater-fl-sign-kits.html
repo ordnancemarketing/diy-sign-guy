@@ -307,6 +307,8 @@ gtag('config', 'G-69T7JQ3J6S');
 @media(max-width:900px){.dealerbar{flex-wrap:wrap;}.dealerbar a.bookcall{margin-right:0;}}
 </style>
 <script src="/js/book-call.js?v=1" defer></script>
+<link rel="stylesheet" href="/css/leadform.css?v=1">
+<script src="/js/leadform.js?v=1" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to main content</a>
@@ -492,7 +494,37 @@ gtag('config', 'G-69T7JQ3J6S');
 .cityform .fine{margin-top:2px;line-height:1.5;}
 .ctaband .ctalink{margin-top:16px;font-size:.9rem;}
 .ctaband .ctalink a{color:var(--gold);text-decoration:underline;text-underline-offset:2px;}
-</style><div class="ctaband" id="quote"><h2>Get Your Custom Quote For Clearwater, FL</h2><p>Tell me what you need and I&rsquo;ll send you a straight, written quote &mdash; from the guy who actually builds it. No showroom visit, no pressure.</p><form class="qform cityform" id="contact-form" action="https://formsubmit.co/53a268911bc8cb65aa67024778f3e366" method="POST"><input type="hidden" name="_subject" value="New sign quote request - Clearwater, FL"><input type="hidden" name="_captcha" value="true"><input type="hidden" name="_cc" value="meadowsigns@mail.grokbot.com"><input type="hidden" name="_next" value="https://diysignguy.com/thank-you.html"><input type="hidden" name="_template" value="table"><input type="hidden" name="from_page" value="Clearwater, FL (clearwater-fl-sign-kits.html)"><input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true"><div class="frow"><div class="field"><label for="c-name">Your name *</label><input id="c-name" type="text" name="full_name" required autocomplete="name"></div><div class="field"><label for="c-email">Email address *</label><input id="c-email" type="email" name="email" required autocomplete="email"></div></div><div class="field"><label for="c-size">Roughly how wide is the sign? *</label><select id="c-size" name="sign_size" required><option value="">Select a size</option><option>Not sure yet - help me figure it out</option><option>Up to 4 feet wide</option><option>4 to 6 feet wide</option><option>6 to 8 feet wide</option><option>8 to 12 feet wide</option><option>Over 12 feet, or a pole / pylon sign</option></select></div><div class="field"><label for="c-note">Anything else I should know? (optional)</label><textarea id="c-note" name="project_details" placeholder="Wall or pole mounted? Lit or unlit? Single or double sided? Replacing an old sign? Anything helps."></textarea></div><button type="submit" class="btn">Send My Project Details</button><div class="fine">Required fields marked *. Your message comes straight to Dean &mdash; not a sales team. I do not sell your information.</div></form><p class="ctalink"><a href="contact.html">Or use the full contact form</a> &nbsp;&middot;&nbsp; <a href="mailto:dean@diysignguy.com?subject=Book%20a%20call%20with%20Dean" data-book-call>&#128197; Book a Call with Dean</a></p></div>
+</style><div class="ctaband" id="quote"><h2>Get Your Custom Quote For Clearwater, FL</h2><p>Tell me what you need and I&rsquo;ll send you a straight, written quote &mdash; from the guy who actually builds it. No showroom visit, no pressure.</p><form class="qform leadform cityform" id="contact-form" action="https://formsubmit.co/53a268911bc8cb65aa67024778f3e366" method="POST" enctype="multipart/form-data">
+      <input type="hidden" name="_subject" value="New sign quote request - Clearwater, FL">
+      <input type="hidden" name="_captcha" value="true">
+      <input type="hidden" name="_cc" value="meadowsigns@mail.grokbot.com">
+      <input type="hidden" name="_next" value="https://diysignguy.com/thank-you.html">
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="from_page" value="Clearwater, FL (clearwater-fl-sign-kits.html)">
+      <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="frow">
+        <div class="field"><label for="c-name">Your name *</label><input id="c-name" type="text" name="full_name" required autocomplete="name"></div>
+        <div class="field"><label for="c-email">Email address *</label><input id="c-email" type="email" name="email" required autocomplete="email"></div>
+      </div>
+      <div class="field"><label for="c-phone">Phone <span class="opt">(optional)</span></label><input id="c-phone" type="tel" name="phone" autocomplete="tel"></div>
+      <div class="field"><label for="c-site">Install site address *</label><input id="c-site" type="text" name="install_address" required autocomplete="street-address" placeholder="Street, City, State ZIP"></div>
+      <label class="checkrow"><input type="checkbox" name="mailing_same_as_install" value="Yes" checked> Mailing address same as install address</label>
+      <div class="field mailwrap"><label for="c-mail">Mailing address <span class="opt">(optional)</span></label><input id="c-mail" type="text" name="mailing_address" autocomplete="off" placeholder="Street, City, State ZIP"></div>
+      <div class="frow">
+        <div class="field"><label for="c-need">What do you need? *</label><select id="c-need" name="what_do_you_need" required><option value="">Select one</option><option>Lighted cabinet sign</option><option>Channel letters</option><option>LED message center</option><option>Monument sign</option><option>Pole/pylon sign</option><option>DIY sign kit / panels</option><option>Print / graphics</option><option>Not sure yet</option></select></div>
+        <div class="field"><label for="c-size">Rough size, if known <span class="opt">(optional)</span></label><input id="c-size" type="text" name="rough_size" placeholder="e.g. 4 ft x 8 ft"></div>
+      </div>
+      <div class="field"><label for="c-msg">Message</label><textarea id="c-msg" name="message" placeholder="Wall or pole mounted? Lit or unlit? Single or double sided? Replacing an old sign? Anything helps."></textarea></div>
+      <fieldset class="files"><legend>Upload site photos or logo <span class="opt">(optional)</span></legend>
+        <input type="file" name="attachment_1" accept="image/*,.pdf" aria-label="Photo or logo file 1">
+        <input type="file" name="attachment_2" accept="image/*,.pdf" aria-label="Photo or logo file 2">
+        <input type="file" name="attachment_3" accept="image/*,.pdf" aria-label="Photo or logo file 3">
+        <p class="hint"><b>Tip:</b> Stand back from the road and include something for scale, like a door or a car. Up to 3 files (photos or PDF), 10 MB total.</p>
+        <p class="fileerr" role="status" aria-live="polite"></p>
+      </fieldset>
+      <button type="submit" class="btn">Send My Project Details</button>
+      <p class="privline">&#128274; Your information stays private. We never sell or share it.</p>
+    </form><p class="ctalink"><a href="contact.html">Or use the full contact form</a> &nbsp;&middot;&nbsp; <a href="mailto:dean@diysignguy.com?subject=Book%20a%20call%20with%20Dean" data-book-call>&#128197; Book a Call with Dean</a></p></div>
 </main>
 <footer><div class="footcities">
   <div class="fchead">DIY LED Sign Kits Shipped To</div>
