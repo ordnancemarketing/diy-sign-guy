@@ -1,0 +1,20 @@
+# ============================================================
+# /office/ — Dean's private back office — HTTP Basic Auth
+# Upload as:  public_html/office/.htaccess
+# Password file lives OUTSIDE the web root (never in public_html or the Git repo):
+#   /home/u313999335/.htpasswds/diysignguy-office/.htpasswd
+# (FTP path relative to the FTP login root: .htpasswds/diysignguy-office/.htpasswd)
+# ============================================================
+AuthType Basic
+AuthName "DIY Sign Guy Back Office"
+AuthUserFile /home/u313999335/.htpasswds/diysignguy-office/.htpasswd
+Require valid-user
+
+# Never index anything in here (belt and braces with the meta robots tags)
+<IfModule mod_headers.c>
+  Header always set X-Robots-Tag "noindex, nofollow, noarchive, nosnippet"
+  Header always set Cache-Control "private, no-store"
+</IfModule>
+
+# No directory listings
+Options -Indexes
