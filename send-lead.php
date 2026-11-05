@@ -7,6 +7,15 @@ const CC       = 'meadow-diy@mail.grokbot.com';
 const FROM     = 'leads@diysignguy.com';
 const MAX_FILE = 10485760; // 10 MB total attachments
 const THANKS   = '/thank-you.html';
+// Optional modes chosen by the hidden "_form" field. Unknown values fall back to a normal lead.
+const MODES = [
+    'order' => ['subject' => 'NEW ORDER - DIY Sign Guy', 'next' => '/office/thanks.html',
+        'auto' => 'Thank you - your DIY Sign Guy order details were received. Dean will review and email your invoice. Your build begins once the invoice is paid.'],
+    'agreement' => ['subject' => 'SIGNED AGREEMENT - DIY Sign Guy', 'next' => '/office/thanks.html',
+        'auto' => 'Thank you - your signed DIY Sign Guy project agreement was received. Dean will confirm and send your invoice by email. Keep this message for your records.'],
+];
+$mode = MODES[(string)($_POST['_form'] ?? '')] ?? null;
+$next = $mode['next'] ?? THANKS;
 
 function fail(int $code, string $msg): void {
     http_response_code($code);
@@ -24,7 +33,7 @@ function clean(string $s): string {
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') { header('Allow: POST'); fail(405, 'This address only accepts form submissions.'); }
 // Honeypot filled = bot. Pretend success so bots learn nothing.
-if (!empty($_POST['_honey'])) { header('Location: ' . THANKS, true, 303); exit; }
+if (!empty($_POST['_honey'])) { header('Location: ' . $next, true, 303); exit; }
 
 $rows = '';
 $fields = 0;
@@ -43,13 +52,13 @@ if ($fields === 0) fail(400, 'The form was empty.');
 
 $email   = clean((string)($_POST['email'] ?? ''));
 $replyTo = filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : '';
-$name    = clean((string)($_POST['full_name'] ?? $_POST['name'] ?? ''));
+$name    = clean((string)($_POST['full_name'] ?? $_POST['signature_full_name'] ?? $_POST['name'] ?? ''));
 $page    = clean((string)($_SERVER['HTTP_REFERER'] ?? ''));
-$subject = 'New DIY Sign Guy project inquiry' . ($name !== '' ? ' - ' . substr($name, 0, 80) : '');
+$subject = ($mode['subject'] ?? 'New DIY Sign Guy project inquiry') . ($name !== '' ? ' - ' . substr($name, 0, 80) : '');
 
 $html = '<html><body style="font-family:sans-serif"><h2>' . htmlspecialchars($subject) . '</h2>'
       . '<table cellspacing="0" style="border-collapse:collapse">' . $rows . '</table>'
-      . '<p style="color:#777;font-size:12px">Page: ' . htmlspecialchars($page) . '<br>Sent: ' . date('Y-m-d H:i T') . '</p></body></html>';
+      . '<p style="color:#777;font-size:12px">Page: ' . htmlspecialchars($page) . '<br>Sent: ' . date('Y-m-d H:i:s T') . '<br>IP: ' . htmlspecialchars(clean((string)($_SERVER['REMOTE_ADDR'] ?? ''))) . '</p></body></html>';
 
 // Attachments
 $files = [];
@@ -90,5 +99,11 @@ $encSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
 if (!mail(TO, $encSubject, $body, $headers, '-f' . FROM)) {
     fail(500, 'Our mail server had a problem sending your message.');
 }
-header('Location: ' . THANKS, true, 303);
+// Plain-text confirmation to the submitter (fixed text only; nothing from the form is echoed back).
+if ($mode && $replyTo !== '') {
+    @mail($replyTo, '=?UTF-8?B?' . base64_encode('We received your ' . ($_POST['_form'] === 'order' ? 'order details' : 'signed agreement') . ' - DIY Sign Guy') . '?=',
+        $mode['auto'] . "\r\n\r\nDIY Sign Guy\r\ndean@diysignguy.com",
+        'From: DIY Sign Guy <' . FROM . ">\r\nReply-To: " . TO . "\r\nContent-Type: text/plain; charset=UTF-8", '-f' . FROM);
+}
+header('Location: ' . $next, true, 303);
 exit;
