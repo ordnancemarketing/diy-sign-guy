@@ -1,4 +1,4 @@
-/* Shared lead / quote form behavior: mailing-address toggle + 10 MB attachment check (FormSubmit limit). */
+/* Shared lead / quote form behavior: mailing-address toggle + 10 MB attachment check (server limit). */
 (function () {
   var LIMIT = 10 * 1024 * 1024;
   function init(form) {

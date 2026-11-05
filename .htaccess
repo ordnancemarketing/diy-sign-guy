@@ -60,7 +60,8 @@ RewriteRule ^maryland-heights-mo-sign-kits\.html$ https://diysignguy.com/sign-ki
 
 # --- Content Security Policy ---
 # Allow-list matches exactly what the site loads: Google Fonts (CSS + font files),
-# Google Analytics, and the FormSubmit endpoint the two forms POST to.
+# Google Analytics. Lead forms POST to /send-lead.php (same origin); the external
+# form-action entry remains only for the two /office/ forms.
 # No ad networks, no third-party pixels, no inline event handlers.
 <IfModule mod_headers.c>
   Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self' https://formsubmit.co; img-src 'self' data: https://*.google-analytics.com https://*.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://*.googletagmanager.com https://*.google-analytics.com; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; upgrade-insecure-requests"
