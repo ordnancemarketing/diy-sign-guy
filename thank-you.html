@@ -301,7 +301,7 @@ gtag('config', 'G-69T7JQ3J6S');
     var t = sessionStorage.getItem('dsg_lead_submitted');
     if (t && (Date.now() - Number(t)) < 1800000) { real = true; sessionStorage.removeItem('dsg_lead_submitted'); }
   } catch(e){}
-  if (!real && /formsubmit\.co|diysignguy\.com\/contact/i.test(document.referrer || '')) real = true;
+  if (!real && /diysignguy\.com\/(contact|pricing|[a-z-]+-sign-kits)/i.test(document.referrer || '')) real = true;
   if (real && typeof gtag === 'function') {
     gtag('event', 'generate_lead', {lead_source: 'website_quote_form', form_name: 'contact_quote_request'});
   }
