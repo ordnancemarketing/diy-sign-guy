@@ -91,12 +91,8 @@
 <main id="main">
 <section>
   <div class="privacy">&#128274; I do not sell your information. All your information you give me is kept private. I will not sell your information.</div>
-  <form class="qform" id="order-form" action="https://formsubmit.co/b9ec6607eb4f08caecaae7e29c02ecb5" method="POST">
-    <input type="hidden" name="_subject" value="NEW ORDER — DIY Sign Guy">
-    <input type="hidden" name="_captcha" value="false">
-    <input type="hidden" name="_template" value="table">
-    <input type="hidden" name="_next" value="https://diysignguy.com/office/thanks.html">
-    <input type="hidden" name="_autoresponse" value="Thank you — your DIY Sign Guy order details were received. Dean will review and email your invoice. Your build begins once the invoice is paid.">
+  <form class="qform" id="order-form" action="/send-lead.php" method="POST">
+    <input type="hidden" name="_form" value="order">
     <input type="hidden" name="document" value="Sign Order Form">
     <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true">
 
