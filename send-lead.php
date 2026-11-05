@@ -73,7 +73,6 @@ foreach ($_FILES as $f) {
 
 $b = 'b' . bin2hex(random_bytes(12));
 $headers  = 'From: DIY Sign Guy Website <' . FROM . ">\r\n";
-$headers .= 'Cc: ' . CC . "\r\n";
 if ($replyTo !== '') $headers .= 'Reply-To: ' . $replyTo . "\r\n";
 $headers .= "MIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"$b\"";
 
@@ -87,6 +86,7 @@ foreach ($files as [$nm, $data]) {
 $body .= "--$b--";
 
 $encSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+@mail(CC, $encSubject, $body, $headers, '-f' . FROM); // separate copy to bot inbox
 if (!mail(TO, $encSubject, $body, $headers, '-f' . FROM)) {
     fail(500, 'Our mail server had a problem sending your message.');
 }
