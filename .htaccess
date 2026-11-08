@@ -3,6 +3,8 @@
 # Branch: fix/site-health-and-seo  (server-side 301s, no chains)
 # ============================================================
 
+AddType font/woff2 .woff2
+
 RewriteEngine On
 
 # --- Canonical host: force non-www over HTTPS (single hop) ---
@@ -83,6 +85,8 @@ RewriteRule ^maryland-heights-mo-sign-kits\.html$ https://diysignguy.com/sign-ki
   ExpiresByType image/png                 "access plus 1 year"
   ExpiresByType image/svg+xml             "access plus 1 year"
   ExpiresByType image/x-icon              "access plus 1 year"
+  ExpiresByType font/woff2               "access plus 1 year"
+  ExpiresByType application/font-woff2    "access plus 1 year"
   ExpiresByType text/css                  "access plus 1 year"
   ExpiresByType application/javascript    "access plus 1 year"
   ExpiresByType text/html                 "access plus 0 seconds"
