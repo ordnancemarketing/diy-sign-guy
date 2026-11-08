@@ -4,6 +4,7 @@
 # ============================================================
 
 AddType font/woff2 .woff2
+AddType image/avif .avif
 
 RewriteEngine On
 
@@ -81,6 +82,7 @@ RewriteRule ^maryland-heights-mo-sign-kits\.html$ https://diysignguy.com/sign-ki
 <IfModule mod_expires.c>
   ExpiresActive On
   ExpiresByType image/webp                "access plus 1 year"
+  ExpiresByType image/avif                "access plus 1 year"
   ExpiresByType image/jpeg                "access plus 1 year"
   ExpiresByType image/png                 "access plus 1 year"
   ExpiresByType image/svg+xml             "access plus 1 year"
