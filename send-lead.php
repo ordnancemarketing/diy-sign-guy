@@ -34,6 +34,61 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') { header('Allow: POST'); fail
 // Honeypot filled = bot. Pretend success so bots learn nothing.
 if (!empty($_POST['_honey'])) { header('Location: ' . $next, true, 303); exit; }
 
+// General question form (contact page, right side): its own subject and thank-you page, no files.
+$isGeneral = !$mode && (string)($_POST['_form'] ?? '') === 'general';
+if ($isGeneral) { $next = '/thank-you-question.html'; $_FILES = []; }
+
+// Junk screening for website leads and general questions (not for orders or signed agreements).
+// Obvious junk is dropped quietly (they see the normal thank-you page); honest mistakes get a clear message.
+function junk(string $next): void { header('Location: ' . $next, true, 303); exit; }
+if (!$mode) {
+    $vals = [];
+    foreach ($_POST as $k => $v) {
+        if (str_starts_with((string)$k, '_') || is_array($v)) continue;
+        $v = trim((string)$v);
+        if ($v !== '' && $k !== 'mailing_same_as_install') $vals[(string)$k] = $v;
+    }
+    $text = implode("\n", array_diff_key($vals, ['email' => 1]));
+    // Filled out faster than a person can type (bots). _t = milliseconds from page load to submit, set by the form script.
+    $t = (int)($_POST['_t'] ?? 0);
+    if ($t > 0 && $t < 4000) junk($next);
+    // Links, foreign alphabets, or the same long text pasted into several boxes = spam.
+    if (preg_match('~https?://|www\.|\[url|<a\s~i', $text)) junk($next);
+    if (preg_match('/[\p{Cyrillic}\p{Han}\p{Arabic}\p{Hangul}\p{Thai}]/u', $text)) junk($next);
+    $long = array_filter(array_diff_key($vals, ['mailing_address' => 1]), fn($v) => mb_strlen($v) >= 12);
+    if (count($long) !== count(array_unique(array_map('mb_strtolower', $long)))) junk($next);
+    // Salesmen pitching SEO, websites or marketing.
+    $pitch = '/\b(seo\b|search engine optimi[sz]|backlinks?|first page of google|google ranking|rank(ing)? higher|website (analysis|audit|report|redesign|design|development|traffic)|web (design|development|developer)|digital marketing|marketing (services|agency)|lead generation services|free of cost|guest post|virtual assistant|outsourc)/i';
+    if (preg_match($pitch, $text)) {
+        if ($isGeneral) junk($next);
+        fail(400, 'This form is for sign quotes only. If you have a general question, please use the General Questions form on our contact page.');
+    }
+    // Name: letters only, first and last name for quotes.
+    $nm = trim((string)($_POST['full_name'] ?? $_POST['name'] ?? ''));
+    if ($nm === '' || preg_match('/\d/', $nm)) fail(400, 'Please enter your name.');
+    if (!$isGeneral && !preg_match('/\pL+\S*\s+\pL/u', $nm)) fail(400, 'Please enter your first and last name.');
+    if (!filter_var(trim((string)($_POST['email'] ?? '')), FILTER_VALIDATE_EMAIL)) fail(400, 'Please enter a working email address.');
+    if (!$isGeneral) {
+        // Phone: required on the contact page; when given anywhere it must be a real US number.
+        $ph = preg_replace('/\D/', '', (string)($_POST['phone'] ?? ''));
+        if (strlen($ph) === 11 && $ph[0] === '1') $ph = substr($ph, 1);
+        $fromContact = (string)($_POST['_src'] ?? '') === 'contact';
+        if ($ph === '' && $fromContact) fail(400, 'Please enter your phone number so Dean can reach you about your quote.');
+        if ($ph !== '') {
+            $fake = strlen($ph) !== 10 || !preg_match('/^[2-9]\d{2}[2-9]\d{6}$/', $ph)
+                 || preg_match('/^(\d)\1+$/', $ph) || str_contains('01234567890 9876543210', $ph)
+                 || substr($ph, 0, 3) === substr($ph, 3, 3)
+                 || preg_match('/^\d{3}555/', $ph);
+            if ($fake) fail(400, 'Please enter a real 10-digit US phone number.');
+        }
+        // ZIP: required on the contact page (its own box); must be a real-format US ZIP.
+        if ($fromContact) {
+            if (!preg_match('/^\d{5}(-\d{4})?$/', trim((string)($_POST['zip'] ?? ''))) || preg_match('/^0{5}|^(\d)\1{4}$/', trim((string)($_POST['zip'] ?? ''))))
+                fail(400, 'Please enter the 5-digit ZIP code where your sign will go.');
+        }
+    }
+}
+
 $rows = '';
 $fields = 0;
 foreach ($_POST as $k => $v) {
@@ -53,7 +108,7 @@ $email   = clean((string)($_POST['email'] ?? ''));
 $replyTo = filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : '';
 $name    = clean((string)($_POST['full_name'] ?? $_POST['signature_full_name'] ?? $_POST['name'] ?? ''));
 $page    = clean((string)($_SERVER['HTTP_REFERER'] ?? ''));
-$subject = ($mode['subject'] ?? 'New DIY Sign Guy project inquiry') . ($name !== '' ? ' - ' . substr($name, 0, 80) : '');
+$subject = ($mode['subject'] ?? ($isGeneral ? 'General Inquiry - DIY Sign Guy' : 'New DIY Sign Guy project inquiry')) . ($name !== '' ? ' - ' . substr($name, 0, 80) : '');
 
 $html = '<html><body style="font-family:sans-serif"><h2>' . htmlspecialchars($subject) . '</h2>'
       . '<table cellspacing="0" style="border-collapse:collapse">' . $rows . '</table>'

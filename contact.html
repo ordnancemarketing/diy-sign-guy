@@ -307,8 +307,8 @@ gtag('config', 'G-69T7JQ3J6S');
 @media(max-width:900px){.dealerbar{flex-wrap:wrap;}.dealerbar a.bookcall{margin-right:0;}}
 </style>
 <script src="/js/book-call.js?v=1" defer></script>
-<link rel="stylesheet" href="/css/leadform.css?v=1">
-<script src="/js/leadform.js?v=1" defer></script>
+<link rel="stylesheet" href="/css/leadform.css?v=2">
+<script src="/js/leadform.js?v=2" defer></script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to main content</a>
@@ -329,27 +329,34 @@ gtag('config', 'G-69T7JQ3J6S');
 
 <section>
   <span class="kick">Thanks For Stopping By</span>
-  <h1>Let's Talk About <span class="lit">Your Sign</span></h1>
-  <p class="lead" style="margin-bottom:26px;">Tell me about your project and I'll answer with straight guidance and a written quote &mdash; from the guy who actually builds it.</p>
-  <div class="contactline" style="display:flex;gap:12px 22px;flex-wrap:wrap;align-items:center;margin-bottom:22px;">
-    <a class="btn" href="mailto:dean@diysignguy.com?subject=Book%20a%20call%20with%20Dean" data-book-call>&#128197; Book a Call with Dean</a>
-  </div>
-  <div class="formgrid">
-    <form class="qform leadform" id="contact-form" action="/send-lead.php" method="POST" enctype="multipart/form-data">
+  <h1>How Can I <span class="lit">Help You?</span></h1>
+  <div class="privbox" role="note"><p><b>I will never sell your information.</b> Your information is private.</p><p class="privsig">&ndash; Dean</p></div>
+  <p class="formjump">Just have a question? <a href="#question-form">Jump to General Questions &darr;</a></p>
+  <div class="formgrid twoforms">
+    <form class="qform leadform" id="contact-form" action="/send-lead.php" method="POST" enctype="multipart/form-data" aria-labelledby="quote-head">
       <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <input type="hidden" name="_src" value="contact"><input type="hidden" name="_t" value="">
+      <p class="optag">Option 1</p>
+      <h2 id="quote-head">Your Sign Project &ndash; Get a Sign Quote</h2>
+      <p class="formsub">Need a sign? Tell me about it and I'll send you a written quote.</p>
       <div class="frow">
-        <div class="field"><label for="f-name">Your name *</label><input id="f-name" type="text" name="full_name" required autocomplete="name"></div>
+        <div class="field"><label for="f-name">First and last name *</label><input id="f-name" type="text" name="full_name" required autocomplete="name" pattern="[^0-9]*[A-Za-z]+[^0-9]*\s+[^0-9]*[A-Za-z][^0-9]*" title="Please enter your first and last name"></div>
         <div class="field"><label for="f-email">Email address *</label><input id="f-email" type="email" name="email" required autocomplete="email"></div>
       </div>
-      <div class="field"><label for="f-phone">Phone <span class="opt">(optional)</span></label><input id="f-phone" type="tel" name="phone" autocomplete="tel"></div>
-      <div class="field"><label for="f-site">Install site address *</label><input id="f-site" type="text" name="install_address" required autocomplete="street-address" placeholder="Street, City, State ZIP"></div>
+      <div class="field"><label for="f-phone">Phone *</label><input id="f-phone" type="tel" name="phone" required autocomplete="tel" inputmode="tel" pattern="[\s()+.\-]*1?[\s()+.\-]*[2-9][0-9]{2}[\s().\-]*[2-9][0-9]{2}[\s.\-]*[0-9]{4}\s*" title="Please enter a 10-digit US phone number"></div>
+      <div class="field"><label for="f-site">Install street address *</label><input id="f-site" type="text" name="install_address" required autocomplete="street-address" placeholder="Street address where the sign will go"></div>
+      <div class="frow frow3">
+        <div class="field"><label for="f-city">City *</label><input id="f-city" type="text" name="city" required autocomplete="address-level2"></div>
+        <div class="field"><label for="f-state">State *</label><input id="f-state" type="text" name="state" required autocomplete="address-level1" maxlength="20"></div>
+        <div class="field"><label for="f-zip">ZIP code *</label><input id="f-zip" type="text" name="zip" required autocomplete="postal-code" inputmode="numeric" pattern="[0-9]{5}(-[0-9]{4})?" maxlength="10" title="5-digit ZIP code"></div>
+      </div>
       <label class="checkrow"><input type="checkbox" name="mailing_same_as_install" value="Yes" checked> Mailing address same as install address</label>
       <div class="field mailwrap"><label for="f-mail">Mailing address <span class="opt">(optional)</span></label><input id="f-mail" type="text" name="mailing_address" autocomplete="off" placeholder="Street, City, State ZIP"></div>
       <div class="frow">
         <div class="field"><label for="f-need">What do you need? *</label><select id="f-need" name="what_do_you_need" required><option value="">Select one</option><option>Lighted cabinet sign</option><option>Channel letters</option><option>LED message center</option><option>Monument sign</option><option>Pole/pylon sign</option><option>DIY sign kit / panels</option><option>Print / graphics</option><option>Not sure yet</option></select></div>
         <div class="field"><label for="f-size">Rough size, if known <span class="opt">(optional)</span></label><input id="f-size" type="text" name="rough_size" placeholder="e.g. 4 ft x 8 ft"></div>
       </div>
-      <div class="field"><label for="f-msg">Message</label><textarea id="f-msg" name="message" placeholder="Wall or pole mounted? Lit or unlit? Single or double sided? Replacing an old sign? Anything helps."></textarea></div>
+      <div class="field"><label for="f-msg">Tell me about your sign</label><textarea id="f-msg" name="message" placeholder="Wall or pole mounted? Lit or unlit? Single or double sided? Replacing an old sign? Anything helps."></textarea></div>
       <fieldset class="files"><legend>Upload site photos or logo <span class="opt">(optional)</span></legend>
         <input type="file" name="attachment_1" accept="image/*,.pdf" aria-label="Photo or logo file 1">
         <input type="file" name="attachment_2" accept="image/*,.pdf" aria-label="Photo or logo file 2">
@@ -357,20 +364,26 @@ gtag('config', 'G-69T7JQ3J6S');
         <p class="hint"><b>Tip:</b> Stand back from the road and include something for scale, like a door or a car. Up to 3 files (photos or PDF), 10 MB total.</p>
         <p class="fileerr" role="status" aria-live="polite"></p>
       </fieldset>
-      <button type="submit" class="btn">Send My Project Details</button>
-      <p class="privline">&#128274; Your information stays private. We never sell or share it.</p>
+      <button type="submit" class="btn">Get My Sign Quote</button>
     </form>
-    <div class="helppanel">
-      <h2>What Happens Next</h2>
-      <p>Your message comes straight to Dean &mdash; not a sales team. You'll get honest guidance on your project and a written quote for your kit, shipped.</p>
-      <h2 style="margin-top:18px;">Help Me Help You</h2>
-      <p>The more you tell me &mdash; sizes, mounting, lighting, photos of the location &mdash; the faster and more accurate your quote will be.</p>
-      <h2 style="margin-top:18px;">Rather Talk It Through?</h2>
-      <p>Book a quick call with Dean and walk through your sign, sizes and install plan together.</p>
-      <p><a class="btn btn-sm" href="mailto:dean@diysignguy.com?subject=Book%20a%20call%20with%20Dean" data-book-call>&#128197; Book a Call with Dean</a></p>
-      <h2 style="margin-top:18px;">Nationwide</h2>
-      <p>Kits, graphics and hardware ship across the United States. We work by email wherever you are.</p>
-    </div>
+    <form class="qform leadform genform" id="question-form" action="/send-lead.php" method="POST" aria-labelledby="gen-head">
+      <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <input type="hidden" name="_form" value="general"><input type="hidden" name="_t" value="">
+      <p class="optag">Option 2</p>
+      <h2 id="gen-head">General Questions &amp; Contact</h2>
+      <p class="formsub">Questions about our products, shipping or what I can build? Ask away and I'll get back to you.</p>
+      <p class="formsub"><b>Need pricing?</b> Use the Sign Quote form so I can quote your exact sign.</p>
+      <div class="field"><label for="g-name">Your name *</label><input id="g-name" type="text" name="name" required autocomplete="name"></div>
+      <div class="field"><label for="g-email">Email address *</label><input id="g-email" type="email" name="email" required autocomplete="email"></div>
+      <div class="field"><label for="g-msg">Your question *</label><textarea id="g-msg" name="message" required rows="7"></textarea></div>
+      <button type="submit" class="btn btn-gray">Send My Question</button>
+      <p class="hint">This form is for questions and product information. Prices are given through the Sign Quote form only.</p>
+      <div class="genextra">
+        <h3>Rather Talk It Through?</h3>
+        <p>Book a quick call with Dean and walk through your sign, sizes and install plan together.</p>
+        <p><a class="btn btn-sm" href="mailto:dean@diysignguy.com?subject=Book%20a%20call%20with%20Dean" data-book-call>&#128197; Book a Call with Dean</a></p>
+      </div>
+    </form>
   </div>
 </section>
 <div class="trust">

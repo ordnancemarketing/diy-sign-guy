@@ -13,3 +13,19 @@
 .leadform .privline{font-size:.82rem;color:#cfe4ff;display:flex;gap:8px;align-items:center;justify-content:center;text-align:center;margin:-4px 0 0;}
 .leadform .btn{width:100%;}
 @media(max-width:600px){.leadform{padding:20px !important;}}
+/* Contact page: privacy promise + two forms side by side */
+.privbox{border:2px solid #e03a3a;border-radius:14px;background:#101216;padding:16px 22px;margin:4px auto 26px;max-width:760px;text-align:center;}
+.privbox p{margin:0;font-size:1.15rem;color:#e6ebf2;}
+.privbox b{color:#ff5a5a;}
+.privbox .privsig{font-family:'Brush Script MT','Segoe Script',cursive;font-size:1.7rem;color:#fff;margin-top:4px;}
+.twoforms{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start;}
+.twoforms .optag{margin:0;font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted,#9aa6b5);}
+.twoforms h2{margin:2px 0 6px;font-size:1.45rem;}
+.twoforms .formsub{margin:0 0 6px;color:#c3ccd9;}
+.twoforms .frow3{grid-template-columns:2fr 1fr 1fr;}
+.leadform .btn-gray{background:linear-gradient(160deg,#4a515c,#2a2f38);box-shadow:none;}
+.genform .genextra{border-top:1px solid #2a2f38;margin-top:8px;padding-top:12px;}
+.genform .genextra h3{margin:0 0 6px;color:#fff;font-size:1.05rem;}
+@media(max-width:900px){.twoforms{grid-template-columns:1fr;}.twoforms .frow3{grid-template-columns:1fr 1fr;}}
+.formjump{display:none;text-align:center;margin:-12px 0 18px;}
+@media(max-width:900px){.formjump{display:block;}}
