@@ -2,6 +2,8 @@
 (function () {
   var LIMIT = 10 * 1024 * 1024;
   function init(form) {
+    var t = form.querySelector('input[name="_t"]'), loaded = Date.now();
+    if (t) form.addEventListener('submit', function () { t.value = String(Math.max(1, Date.now() - loaded)); });
     var same = form.querySelector('input[name="mailing_same_as_install"]');
     var wrap = form.querySelector('.mailwrap');
     if (same && wrap) {
