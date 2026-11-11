@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 const TO       = 'dean@diysignguy.com';
-const CC       = 'meadow-diy@mail.grokbot.com';
 const FROM     = 'leads@diysignguy.com';
 const MAX_FILE = 10485760; // 10 MB total attachments
 const THANKS   = '/thank-you.html';
@@ -95,7 +94,6 @@ foreach ($files as [$nm, $data]) {
 $body .= "--$b--";
 
 $encSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
-@mail(CC, $encSubject, $body, $headers, '-f' . FROM); // separate copy to bot inbox
 if (!mail(TO, $encSubject, $body, $headers, '-f' . FROM)) {
     fail(500, 'Our mail server had a problem sending your message.');
 }
