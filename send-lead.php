@@ -16,6 +16,66 @@ const MODES = [
 $mode = MODES[(string)($_POST['_form'] ?? '')] ?? null;
 $next = $mode['next'] ?? THANKS;
 
+// ---- Mail sending -------------------------------------------------------------------
+// If a private SMTP settings file exists OUTSIDE the public site (../private/smtp-config.php,
+// never in this repo), mail is sent through that signed-in mailbox so it passes sender checks.
+// If the file is missing, or SMTP fails for any reason, it falls back to PHP mail() so a lead is never lost.
+// The settings file returns: ['host' => 'smtp.hostinger.com', 'port' => 465, 'user' => 'mailbox@domain', 'pass' => '...'].
+function smtp_config(): ?array {
+    $path = dirname(__DIR__) . '/private/smtp-config.php';
+    if (!is_file($path) || !is_readable($path)) return null;
+    $c = @include $path;
+    if (!is_array($c) || empty($c['host']) || empty($c['user']) || empty($c['pass'])) return null;
+    $c['port'] = (int)($c['port'] ?? 465);
+    return $c;
+}
+function smtp_send(array $c, string $to, string $subject, string $body, string $headers): bool {
+    $fp = @stream_socket_client('ssl://' . $c['host'] . ':' . $c['port'], $en, $es, 15);
+    if (!$fp) return false;
+    stream_set_timeout($fp, 20);
+    $read = function () use ($fp): string {
+        $out = '';
+        while (($line = fgets($fp, 1024)) !== false) { $out .= $line; if (isset($line[3]) && $line[3] === ' ') break; }
+        return $out;
+    };
+    $cmd = function (string $line, string $expect) use ($fp, $read): bool {
+        fwrite($fp, $line . "\r\n");
+        return strncmp($read(), $expect, strlen($expect)) === 0;
+    };
+    $ok = strncmp($read(), '220', 3) === 0
+        && $cmd('EHLO diysignguy.com', '250')
+        && $cmd('AUTH LOGIN', '334')
+        && $cmd(base64_encode($c['user']), '334')
+        && $cmd(base64_encode($c['pass']), '235')
+        && $cmd('MAIL FROM:<' . $c['user'] . '>', '250')
+        && $cmd('RCPT TO:<' . $to . '>', '250')
+        && $cmd('DATA', '354');
+    if ($ok) {
+        $domain = substr((string)strrchr($c['user'], '@'), 1);
+        $msg = 'Date: ' . date('r') . "\r\n"
+             . 'Message-ID: <' . bin2hex(random_bytes(16)) . '@' . $domain . ">\r\n"
+             . 'To: ' . $to . "\r\n"
+             . 'Subject: ' . $subject . "\r\n"
+             . $headers . "\r\n\r\n" . $body;
+        $msg = preg_replace('/\r\n|\r|\n/', "\r\n", $msg);
+        $msg = preg_replace('/^\./m', '..', $msg);
+        fwrite($fp, $msg . "\r\n");
+        $ok = $cmd('.', '250');
+    }
+    @fwrite($fp, "QUIT\r\n");
+    @fclose($fp);
+    return $ok;
+}
+// $fromName is the display name; the address is the SMTP mailbox when SMTP is used, else FROM.
+function send_mail(string $to, string $subject, string $body, string $fromName, string $extraHeaders): bool {
+    $c = smtp_config();
+    if ($c !== null) {
+        $h = 'From: ' . $fromName . ' <' . $c['user'] . ">\r\n" . $extraHeaders;
+        if (smtp_send($c, $to, $subject, $body, $h)) return true;
+    }
+    return mail($to, $subject, $body, 'From: ' . $fromName . ' <' . FROM . ">\r\n" . $extraHeaders, '-f' . FROM);
+}
+
 function fail(int $code, string $msg): void {
     http_response_code($code);
     header('Content-Type: text/html; charset=utf-8');
@@ -135,7 +195,7 @@ foreach ($_FILES as $f) {
 }
 
 $b = 'b' . bin2hex(random_bytes(12));
-$headers  = 'From: DIY Sign Guy Website <' . FROM . ">\r\n";
+$headers  = '';
 if ($replyTo !== '') $headers .= 'Reply-To: ' . $replyTo . "\r\n";
 $headers .= "MIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"$b\"";
 
@@ -149,14 +209,14 @@ foreach ($files as [$nm, $data]) {
 $body .= "--$b--";
 
 $encSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
-if (!mail(TO, $encSubject, $body, $headers, '-f' . FROM)) {
+if (!send_mail(TO, $encSubject, $body, 'DIY Sign Guy Website', $headers)) {
     fail(500, 'Our mail server had a problem sending your message.');
 }
 // Plain-text confirmation to the submitter (fixed text only; nothing from the form is echoed back).
 if ($mode && $replyTo !== '') {
-    @mail($replyTo, '=?UTF-8?B?' . base64_encode('We received your ' . ($_POST['_form'] === 'order' ? 'order details' : 'signed agreement') . ' - DIY Sign Guy') . '?=',
+    @send_mail($replyTo, '=?UTF-8?B?' . base64_encode('We received your ' . ($_POST['_form'] === 'order' ? 'order details' : 'signed agreement') . ' - DIY Sign Guy') . '?=',
         $mode['auto'] . "\r\n\r\nDIY Sign Guy\r\ndean@diysignguy.com",
-        'From: DIY Sign Guy <' . FROM . ">\r\nReply-To: " . TO . "\r\nContent-Type: text/plain; charset=UTF-8", '-f' . FROM);
+        'DIY Sign Guy', 'Reply-To: ' . TO . "\r\nContent-Type: text/plain; charset=UTF-8");
 }
 header('Location: ' . $next, true, 303);
 exit;
