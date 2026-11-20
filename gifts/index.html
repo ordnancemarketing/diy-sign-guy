@@ -89,6 +89,11 @@ footer{margin:36px 0 0;padding:18px 0 40px;border-top:1px solid var(--line);colo
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-69T7JQ3J6S"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-69T7JQ3J6S');</script>
+<!-- Meta Pixel (DIY Sign Guy Pixel) -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init','2191721028406310');fbq('track','PageView');
+</script>
 </head>
 <body>
 <div class="top"><div class="wrap">
@@ -256,6 +261,7 @@ function choose(id, scroll){
   pick = GIFTS.filter(function(g){return g.id===id;})[0] || null;
   Array.prototype.forEach.call(document.querySelectorAll('.gift'), function(b){ b.setAttribute('aria-pressed', String(b.dataset.id===id)); });
   ups(); sums(); draw();
+  if (pick && typeof fbq==='function') fbq('track','ViewContent',{content_ids:[pick.id],content_name:pick.name,content_type:'product',value:pick.price,currency:'USD'});
   if (pick && typeof gtag==='function') gtag('event','select_item',{items:[{item_id:pick.id,item_name:pick.name,price:pick.price}]});
   if (scroll) $('s2').scrollIntoView();
 }
@@ -364,7 +370,7 @@ function send(pp){
    .then(function(j){
      if (!j.ok) throw new Error(j.error||'Something went wrong.');
      if (typeof gtag==='function') gtag('event', j.pay_url ? 'begin_checkout' : 'purchase',{transaction_id:j.order,value:total(),currency:'USD',items:[{item_id:pick.id,item_name:pick.name,price:pick.price}]});
-     if (typeof fbq==='function') fbq('track','Purchase',{value:total(),currency:'USD'});
+     if (typeof fbq==='function' && !j.pay_url) fbq('track','Purchase',{value:total(),currency:'USD',content_ids:[pick.id],content_type:'product'},{eventID:j.order});
      $('doneOrder').textContent=j.order; $('doneCoupon').textContent=j.coupon; $('doneExp').textContent = j.coupon_expires ? 'Good on LED sign kits only. Expires '+j.coupon_expires+'. ' : '';
      $('doneMsg').textContent = 'We will reach out when your proof is ready for approval, usually within one business day. Nothing prints until you say yes.';
      if (j.pay_url){ $('doneHead').textContent='One more step: pay to start your order.'; $('payLink').href=j.pay_url; $('payLink').textContent='Pay $'+j.total+' now with PayPal'; $('payNow').hidden=false; }
@@ -393,7 +399,7 @@ if (!PAYPAL_CLIENT_ID){
     var opts=function(source){ return {
       fundingSource: source,
       style: source===paypal.FUNDING.CARD ? {shape:'rect',height:50} : {shape:'rect',height:50,label:'paypal'},
-      onClick:function(d,a){ var p=problems(); show(p); return p ? a.reject() : a.resolve(); },
+      onClick:function(d,a){ var p=problems(); show(p); if(!p && typeof fbq==='function') fbq('track','InitiateCheckout',{value:total(),currency:'USD'}); return p ? a.reject() : a.resolve(); },
       createOrder:function(d,a){ return a.order.create({purchase_units:[{description:(pick.name+adds().map(function(a){return ' + '+a.name;}).join('')+($('decal_addon').checked?' + Logo Decal Pack':'')).slice(0,120),amount:{currency_code:'USD',value:total().toFixed(2)},payee:(PAYPAL_PAYEE?{merchant_id:PAYPAL_PAYEE}:undefined)}],application_context:{shipping_preference:'NO_SHIPPING',brand_name:'DIY Sign Guy'}}); },
       onApprove:function(d,a){ return a.order.capture().then(send); },
       onError:function(){ show('That payment did not go through and you were not charged. Please try again, or call Dean at (314) 540-9472.'); }
