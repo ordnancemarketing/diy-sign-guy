@@ -20,6 +20,14 @@ const GIFTS = [
     'office-pack'              => ['The Office Pack', 289],
 ];
 const DECAL_ADDON = 49;
+// Add-ons offered at checkout: name, add-on price, regular price, gifts that already include it.
+const ADDONS = [
+    'banner'             => ['3 ft x 6 ft Banner', 69, 99, ['banner', 'business-starter-bundle']],
+    'truck-door-magnets' => ['Truck Door Magnets (pair)', 64, 89, ['truck-door-magnets', 'large-truck-door-magnets', 'business-starter-bundle', 'contractor-pack']],
+    'yard-sign-10-pack'  => ['10 Yard Signs', 119, 149, ['yard-sign-10-pack', 'business-starter-bundle', 'contractor-pack']],
+    'shop-wall-sign'     => ['Shop Wall Sign', 109, 149, ['shop-wall-sign', 'office-pack']],
+    'lobby-sign'         => ['Lobby Sign', 139, 179, ['lobby-sign', 'office-pack']],
+];
 // Buyers pay through this PayPal.Me link (amount is added on the end) unless the page sends a completed card checkout.
 const PAYPAL_ME = 'https://www.paypal.com/paypalme/fortune5sign/';
 
@@ -96,7 +104,15 @@ $key = (string)($_POST['gift'] ?? '');
 if (!isset(GIFTS[$key])) out(400, ['ok' => false, 'error' => 'Please choose a gift.']);
 [$giftName, $price] = GIFTS[$key];
 $decal = !empty($_POST['decal_addon']);
-$total = $price + ($decal ? DECAL_ADDON : 0);
+$adds = [];
+$total = $price;
+foreach (array_unique(array_map('strval', (array)($_POST['addons'] ?? []))) as $a) {
+    if (isset(ADDONS[$a]) && !in_array($key, ADDONS[$a][3], true)) { $adds[$a] = ADDONS[$a]; $total += ADDONS[$a][1]; }
+}
+$decalPrice = count($adds) >= 2 ? DECAL_ADDON / 2 : DECAL_ADDON;   // half off the decal pack with any two add-ons
+if ($decal) $total += $decalPrice;
+$fmt = function ($n): string { return '$' . (fmod((float)$n, 1.0) ? number_format((float)$n, 2) : (string)(int)$n); };
+$addNames = implode(', ', array_map(function ($a) use ($fmt) { return $a[0] . ' (' . $fmt($a[1]) . ')'; }, $adds));
 
 $f = [];
 foreach (['business_name' => 120, 'sign_text' => 200, 'buyer_name' => 100, 'email' => 150, 'phone' => 40,
@@ -106,7 +122,7 @@ foreach (['business_name' => 120, 'sign_text' => 200, 'buyer_name' => 100, 'emai
 }
 $needHelp = !empty($_POST['need_help']);
 $lowRes   = !empty($_POST['low_res']);
-$approved = !empty($_POST['approved']);
+$approved = false;   // buyers pay first; the proof is approved afterward
 
 if ($f['business_name'] === '') out(400, ['ok' => false, 'error' => 'Please enter the business name.']);
 if ($f['buyer_name'] === '')    out(400, ['ok' => false, 'error' => 'Please enter your name.']);
@@ -114,7 +130,6 @@ if (!filter_var($f['email'], FILTER_VALIDATE_EMAIL)) out(400, ['ok' => false, 'e
 foreach (['ship_name', 'ship_address', 'ship_city', 'ship_state', 'ship_zip'] as $k) {
     if ($f[$k] === '') out(400, ['ok' => false, 'error' => 'Please fill in the full shipping address.']);
 }
-if (!$approved && !$needHelp) out(400, ['ok' => false, 'error' => 'Please approve the layout or ask for design help.']);
 
 // Uploads: the logo (optional) and the on-screen proof picture.
 $files = [];
@@ -134,7 +149,7 @@ $orderId = 'G' . date('ymd') . '-' . strtoupper(bin2hex(random_bytes(2)));
 $coupon  = 'KIT100-' . strtoupper(bin2hex(random_bytes(3)));
 $couponExpires = date('F j, Y', strtotime('+1 year'));   // coupon is good for one year, LED sign kits only
 $viaLink = $f['paypal_order_id'] === '';   // no on-page checkout: buyer pays through the PayPal.Me link
-$payUrl  = PAYPAL_ME . $total;
+$payUrl  = PAYPAL_ME . rtrim(rtrim(number_format((float)$total, 2, '.', ''), '0'), '.');
 $paidOk  = !$viaLink && abs((float)$f['paypal_amount'] - (float)$total) < 0.01 && strtoupper($f['paypal_status']) === 'COMPLETED';
 
 $flags = [];
@@ -144,7 +159,7 @@ if (!isset($files['logo'])) $flags[] = 'NO LOGO UPLOADED (name only)';
 if (!$viaLink && !$paidOk) $flags[] = 'PAYMENT AMOUNT/STATUS DOES NOT MATCH - CHECK PAYPAL BEFORE PRINTING';
 
 $record = ['order' => $orderId, 'coupon' => $coupon, 'coupon_expires' => $couponExpires, 'time' => date('c'), 'gift' => $key, 'gift_name' => $giftName,
-           'price' => $price, 'decal_addon' => $decal, 'total' => $total, 'approved' => $approved, 'flags' => $flags,
+           'price' => $price, 'addons' => array_keys($adds), 'decal_addon' => $decal, 'decal_price' => $decal ? $decalPrice : 0, 'total' => $total, 'approved' => $approved, 'flags' => $flags,
            'ip' => clean((string)($_SERVER['REMOTE_ADDR'] ?? ''))] + $f;
 
 // Keep a copy outside the public site (best effort; the email to Dean is the record of last resort).
@@ -156,11 +171,11 @@ if (@mkdir($dir, 0700, true) || is_dir($dir)) {
 }
 
 $rows = '';
-$show = ['Order' => $orderId, 'Gift' => $giftName . ' ($' . $price . ')', 'Decal pack add-on' => $decal ? 'YES (+$' . DECAL_ADDON . ')' : 'no',
-         'Total' => '$' . $total, 'Payment' => $viaLink ? 'NOT PAID YET. Buyer was sent to PayPal to pay $' . $total . '. Look for $' . $total . ' from ' . $f['buyer_name'] . ' in PayPal before this prints.'
+$show = ['Order' => $orderId, 'Gift' => $giftName . ' ($' . $price . ')', 'Add-ons' => $addNames !== '' ? $addNames : 'none', 'Decal pack add-on' => $decal ? 'YES (+' . $fmt($decalPrice) . ')' : 'no',
+         'Total' => $fmt($total), 'Payment' => $viaLink ? 'NOT PAID YET. Buyer was sent to PayPal to pay ' . $fmt($total) . '. Look for ' . $fmt($total) . ' from ' . $f['buyer_name'] . ' in PayPal before this prints.'
                                                     : $f['paypal_order_id'] . ' / ' . $f['paypal_status'] . ' / $' . $f['paypal_amount'] . ' / ' . $f['paypal_payer_email'],
          'Coupon code sent' => $coupon . ' (expires ' . $couponExpires . ', LED sign kits only)', 'Business name' => $f['business_name'], 'Extra text for the sign' => $f['sign_text'],
-         'Layout approved on page' => $approved ? 'YES' : 'no', 'Buyer' => $f['buyer_name'] . ' / ' . $f['email'] . ' / ' . $f['phone'],
+         'Proof' => 'NOT APPROVED YET. Build the proof and get the customer\'s OK before this prints.', 'Buyer' => $f['buyer_name'] . ' / ' . $f['email'] . ' / ' . $f['phone'],
          'Ship to' => $f['ship_name'] . ', ' . $f['ship_address'] . ' ' . $f['ship_address2'] . ', ' . $f['ship_city'] . ', ' . $f['ship_state'] . ' ' . $f['ship_zip'],
          'Notes' => $f['notes']];
 foreach ($show as $label => $v) {
@@ -168,8 +183,8 @@ foreach ($show as $label => $v) {
            . '</th><td style="padding:6px 10px;border:1px solid #ddd">' . nl2br(htmlspecialchars((string)$v)) . '</td></tr>';
 }
 $flagHtml = $flags ? '<p style="background:#fde8e8;border:1px solid #c00;padding:10px;font-weight:bold">NEEDS DEAN: ' . htmlspecialchars(implode(' | ', $flags)) . '</p>'
-                   : '<p style="background:#e8f7e8;border:1px solid #2a2;padding:10px">No design issues flagged.' . ($viaLink ? ' Prints once the PayPal payment shows up.' : ' Ready for the 6 p.m. Signs365 run.') . '</p>';
-$subject = ($flags ? 'NEEDS DEAN - ' : '') . 'GIFT ORDER ' . $orderId . ' - ' . $giftName . ' - $' . $total . ($viaLink ? ' - AWAITING PAYPAL PAYMENT' : '');
+                   : '<p style="background:#e8f7e8;border:1px solid #2a2;padding:10px">Paid order. Next step: build the proof and get the customer\'s approval.' . ($viaLink ? ' Check that the PayPal payment showed up first.' : '') . '</p>';
+$subject = ($flags ? 'NEEDS DEAN - ' : '') . 'GIFT ORDER ' . $orderId . ' - ' . $giftName . ' - ' . $fmt($total) . ($viaLink ? ' - AWAITING PAYPAL PAYMENT' : '');
 $html = '<html><body style="font-family:sans-serif"><h2>' . htmlspecialchars($subject) . '</h2>' . $flagHtml
       . '<table cellspacing="0" style="border-collapse:collapse">' . $rows . '</table></body></html>';
 
@@ -186,13 +201,11 @@ $sent = send_mail(TO, '=?UTF-8?B?' . base64_encode($subject) . '?=', $body, 'DIY
 if (!$sent && !is_file($dir . '/order.json')) out(500, ['ok' => false, 'error' => 'Our system had a problem saving the order. Please call Dean at ' . HELP . '.']);
 
 // Confirmation to the buyer: fixed wording plus the order number, gift name and coupon code.
-$next = ($needHelp || $lowRes || !isset($files['logo']))
-    ? "Dean will email you a proof to approve before anything prints, usually within one business day."
-    : "Your approved layout goes to print as soon as your payment arrives. You will get tracking by email when it ships.";
+$next = "We will reach out when your proof is ready for approval, usually within one business day. Nothing prints until you say yes.";
 $payLine = $viaLink ? "TO FINISH YOUR ORDER, PAY HERE: $payUrl\r\n(If you already paid, thank you. You can ignore this line.)\r\n\r\n" : '';
-$txt = "Thank you for your order with DIY Sign Guy.\r\n\r\nOrder: $orderId\r\nGift: $giftName" . ($decal ? " + Logo Decal Pack" : "") . "\r\nTotal: \$$total\r\n\r\n$payLine$next\r\n\r\n"
+$txt = "Thank you for your order with DIY Sign Guy.\r\n\r\nOrder: $orderId\r\nGift: $giftName" . ($adds ? " + " . implode(" + ", array_column($adds, 0)) : "") . ($decal ? " + Logo Decal Pack" : "") . "\r\nTotal: " . $fmt($total) . "\r\n\r\n$payLine$next\r\n\r\n"
      . "YOUR FREE GIFT: \$100 off any DIY LED sign kit at diysignguy.com.\r\nCoupon code: $coupon\r\nGood on LED sign kits only. Expires $couponExpires.\r\nPrint this email or forward it and tuck it in with the gift.\r\n\r\n"
      . "Questions? Call or text Dean at " . HELP . " or reply to this email.\r\n\r\nDIY Sign Guy\r\nhttps://diysignguy.com";
 @send_mail($f['email'], '=?UTF-8?B?' . base64_encode('Your DIY Sign Guy gift order ' . $orderId) . '?=', $txt, 'DIY Sign Guy', 'Reply-To: ' . TO . "\r\nContent-Type: text/plain; charset=UTF-8");
 
-out(200, ['ok' => true, 'order' => $orderId, 'coupon' => $coupon, 'coupon_expires' => $couponExpires, 'total' => $total, 'pay_url' => $viaLink ? $payUrl : null, 'proof_first' => ($needHelp || $lowRes || !isset($files['logo']))]);
+out(200, ['ok' => true, 'order' => $orderId, 'coupon' => $coupon, 'coupon_expires' => $couponExpires, 'total' => $total, 'pay_url' => $viaLink ? $payUrl : null, 'proof_first' => true]);

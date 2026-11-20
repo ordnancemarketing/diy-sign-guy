@@ -68,6 +68,10 @@ canvas{width:100%;height:auto;border-radius:12px;border:1px solid var(--line);di
 .sum{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line)}
 .sum.t{font-size:22px;font-weight:800;border:0;padding-top:12px}
 .sum .g{color:var(--gold)}
+.ups{margin:16px 0 4px;border-top:1px solid var(--line);padding-top:14px}.ups h4{font-size:22px;margin:0 0 2px}
+.up{display:flex;gap:12px;align-items:center;border:2px solid var(--line);border-radius:12px;padding:8px 10px;margin-top:8px;cursor:pointer}
+.up.on{border-color:var(--gold)}.up img{width:64px;height:80px;object-fit:cover;border-radius:8px;flex:none}
+.up input{width:24px;height:24px;flex:none}.up .ut{flex:1;line-height:1.3}.up .was{text-decoration:line-through;opacity:.6}.up .sv{color:var(--gold);font-weight:800}
 #paybox{margin-top:14px;min-height:50px}
 .paybtn{width:100%;padding:16px 18px;border:0;border-radius:12px;background:#ffc439;color:#111;font:inherit;font-weight:800;font-size:19px;cursor:pointer}
 .paybtn:disabled{opacity:.6;cursor:wait}
@@ -125,14 +129,16 @@ footer{margin:36px 0 0;padding:18px 0 40px;border-top:1px solid var(--line);colo
           Take a picture or choose a file
           <input type="file" id="logo" name="logo" accept="image/*,.pdf,.svg,.ai,.eps">
         </div>
-        <div class="note" id="lowres" hidden>That picture is on the small side. No problem: Dean will clean it up and email you a proof to approve before anything prints.</div>
-        <label class="check"><input type="checkbox" id="need_help" name="need_help" value="1"> <span>I don't have a logo, or I want Dean to help with the design. Email me a proof first.</span></label>
+        <div class="note" id="lowres" hidden>That picture is on the small side. No problem: Dean will clean it up before your proof.</div>
+        <label class="check"><input type="checkbox" id="need_help" name="need_help" value="1"> <span>I don't have a logo. Have Dean design one from the business name.</span></label>
       </div>
       <div class="card">
-        <h3 style="font-size:24px;margin-bottom:10px">Here is how it will look</h3>
-        <canvas id="proof" width="900" height="560" role="img" aria-label="Preview of the gift with the business logo"></canvas>
-        <p class="sub" style="margin:10px 0 0;font-size:15px">This is a layout preview. Dean checks every order before it prints.</p>
-        <label class="check"><input type="checkbox" id="approved" name="approved" value="1"> <span>This looks right. I approve this layout.</span></label>
+        <h3 style="font-size:24px;margin-bottom:10px">What happens next</h3>
+        <p style="margin:0 0 10px">1. Place your order today. It takes about two minutes.</p>
+        <p style="margin:0 0 10px">2. Dean cleans up the logo and builds the design by hand.</p>
+        <p style="margin:0 0 10px">3. We reach out when your proof is ready for approval. Nothing prints until you say yes.</p>
+        <p class="sub" style="margin:10px 0 0;font-size:15px">Any phone picture works. If it is dusty, crooked or small, we redraw it clean.</p>
+        <canvas id="proof" width="900" height="560" hidden></canvas>
       </div>
     </div>
   </section>
@@ -165,11 +171,17 @@ footer{margin:36px 0 0;padding:18px 0 40px;border-top:1px solid var(--line);colo
       <div class="card">
         <h3 style="font-size:24px;margin-bottom:10px">Your order</h3>
         <div class="sum"><span id="sumName">Pick a gift above</span><span id="sumPrice"></span></div>
-        <label class="check"><input type="checkbox" id="decal_addon" name="decal_addon" value="1"> <span><b>Add the Logo Decal Pack for $49.</b> Their logo as weatherproof decals for doors, windows, toolboxes and trailers. Ships in the same box.</span></label>
-        <div class="sum" id="sumDecal" hidden><span>Logo Decal Pack</span><span>$49</span></div>
+        <div id="sumAdds"></div>
         <div class="sum"><span>Design and shipping</span><span>Included</span></div>
         <div class="sum"><span class="g">$100 off any DIY LED sign kit coupon</span><span class="g">FREE</span></div>
+        <div class="sum" id="sumSave" hidden><span class="g">You save</span><span class="g" id="sumSaveAmt"></span></div>
         <div class="sum t"><span>Total</span><span id="sumTotal">$0</span></div>
+        <div class="ups" id="ups" hidden>
+          <h4>Add to the gift and save</h4>
+          <p class="sub" style="font-size:15px;margin:0 0 4px">Same logo, same box, no extra shipping.</p>
+          <div id="upList"></div>
+          <label class="up" id="upDecal"><input type="checkbox" id="decal_addon" name="decal_addon" value="1"><span class="ut"><b>Logo Decal Pack</b><br><span id="decalLine"></span></span></label>
+        </div>
         <div class="err" id="err" role="alert"></div>
         <div id="paybox"></div>
         <p class="sub" id="payNote" style="font-size:15px;margin:10px 0 0">Pay safely with PayPal or any card. You do not need a PayPal account.</p>
@@ -206,6 +218,17 @@ var PAYPAL_CLIENT_ID = 'BAA7-S94TAkudQan038nXr0Gi0L2h5I-h6zQpuzRkd5amEbN2cy416mJ
 var PAYPAL_PAYEE = 'PS86TKFQUPFJL';
 var PAYPAL_ME = 'https://www.paypal.com/paypalme/fortune5sign/';
 var DECAL = 49;
+// Add-on prices when added to any gift (they ride in the same box). "has" lists gifts that already include it.
+var ADDONS = [
+ {id:'banner',name:'3 ft x 6 ft Banner',was:99,price:69,has:['banner','business-starter-bundle']},
+ {id:'truck-door-magnets',name:'Truck Door Magnets (pair)',was:89,price:64,has:['truck-door-magnets','large-truck-door-magnets','business-starter-bundle','contractor-pack']},
+ {id:'yard-sign-10-pack',name:'10 Yard Signs',was:149,price:119,has:['yard-sign-10-pack','business-starter-bundle','contractor-pack']},
+ {id:'shop-wall-sign',name:'Shop Wall Sign',was:149,price:109,has:['shop-wall-sign','office-pack']},
+ {id:'lobby-sign',name:'Lobby Sign',was:179,price:139,has:['lobby-sign','office-pack']}
+];
+function money(n){ return '$'+(n%1 ? n.toFixed(2) : n); }
+function adds(){ return ADDONS.filter(function(a){ var c=$('add_'+a.id); return c && c.checked && pick && a.has.indexOf(pick.id)<0; }); }
+function decalPrice(){ return adds().length>=2 ? DECAL/2 : DECAL; }
 var GIFTS = [
  {id:'lobby-sign',name:'The Lobby Sign',price:179,pieces:[['18" x 24" clear acrylic on standoffs',4/3,'acrylic']]},
  {id:'shop-wall-sign',name:'The Shop Wall Sign',price:149,pieces:[['24" x 36" metal sign',3/2,'metal']]},
@@ -232,19 +255,32 @@ GIFTS.forEach(function(g){
 function choose(id, scroll){
   pick = GIFTS.filter(function(g){return g.id===id;})[0] || null;
   Array.prototype.forEach.call(document.querySelectorAll('.gift'), function(b){ b.setAttribute('aria-pressed', String(b.dataset.id===id)); });
-  $('approved').checked = false;
-  sums(); draw();
+  ups(); sums(); draw();
   if (pick && typeof gtag==='function') gtag('event','select_item',{items:[{item_id:pick.id,item_name:pick.name,price:pick.price}]});
   if (scroll) $('s2').scrollIntoView();
 }
-function total(){ return pick ? pick.price + ($('decal_addon').checked ? DECAL : 0) : 0; }
+function total(){ if(!pick) return 0; var t=pick.price; adds().forEach(function(a){t+=a.price;}); if($('decal_addon').checked) t+=decalPrice(); return t; }
 function sums(){
   $('sumName').textContent = pick ? pick.name : 'Pick a gift above';
   $('sumPrice').textContent = pick ? '$'+pick.price : '';
-  $('sumDecal').hidden = !$('decal_addon').checked;
-  $('sumTotal').textContent = '$'+total();
+  var h='', saved=0;
+  adds().forEach(function(a){ h+='<div class="sum"><span>+ '+a.name+'</span><span>$'+a.price+'</span></div>'; saved+=a.was-a.price; });
+  if ($('decal_addon').checked){ h+='<div class="sum"><span>+ Logo Decal Pack</span><span>'+money(decalPrice())+'</span></div>'; saved+=DECAL-decalPrice(); }
+  $('sumAdds').innerHTML=h; $('sumSave').hidden=!saved; $('sumSaveAmt').textContent=money(saved);
+  $('decalLine').innerHTML = adds().length>=2 ? '<span class="was">$49</span> <b>$24.50</b> <span class="sv">Half off</span>' : '$49. <span class="sv">Add any 2 items above and it is half off.</span>';
+  $('upDecal').className='up'+($('decal_addon').checked?' on':'');
+  $('sumTotal').textContent = money(total());
 }
 
+function ups(){
+  $('ups').hidden=!pick; if(!pick) return;
+  $('upList').innerHTML='';
+  ADDONS.forEach(function(a){ if (a.has.indexOf(pick.id)>=0) return;
+    var l=document.createElement('label'); l.className='up';
+    l.innerHTML='<img loading="lazy" width="64" height="80" alt="'+a.name+'" src="/images/gifts/diy-sign-guy-christmas-gift-'+a.id+'.webp"><span class="ut"><b>Add '+a.name+'</b><br><span class="was">$'+a.was+'</span> <b>$'+a.price+'</b> <span class="sv">Save $'+(a.was-a.price)+'</span></span><input type="checkbox" id="add_'+a.id+'" name="addons[]" value="'+a.id+'">';
+    l.querySelector('input').addEventListener('change', function(){ l.className='up'+(this.checked?' on':''); sums(); if(this.checked && typeof gtag==='function') gtag('event','add_to_cart',{items:[{item_id:a.id,item_name:a.name,price:a.price}]}); });
+    $('upList').appendChild(l); });
+}
 // ---- live proof ----
 var cv = $('proof'), cx = cv.getContext('2d');
 function rr(x,y,w,h,r){cx.beginPath();cx.moveTo(x+r,y);cx.arcTo(x+w,y,x+w,y+h,r);cx.arcTo(x+w,y+h,x,y+h,r);cx.arcTo(x,y+h,x,y,r);cx.arcTo(x,y,x+w,y,r);cx.closePath();}
@@ -292,12 +328,12 @@ function draw(){
   ps.forEach(function(p){ var w=p[1]*hgt, legs=(p[2]==='yard')?hgt*0.25:0, y=(H-60-hgt-legs)/2+8; piece(p[2],x,y,w,hgt);
     cx.fillStyle='#f4efe9'; cx.textAlign='center'; cx.textBaseline='alphabetic'; fitText(p[0], Math.max(w,150)+gap-8, 24, '700'); cx.fillText(p[0], x+w/2, H-22); x+=w+gap; });
 }
-['business_name','sign_text'].forEach(function(id){ $(id).addEventListener('input', function(){ $('approved').checked=false; draw(); }); });
+['business_name','sign_text'].forEach(function(id){ $(id).addEventListener('input', function(){ draw(); }); });
 $('logo').addEventListener('change', function(){
-  var f=this.files[0]; logoImg=null; lowRes=false; $('lowres').hidden=true; $('approved').checked=false;
+  var f=this.files[0]; logoImg=null; lowRes=false; $('lowres').hidden=true;
   if (!f){ draw(); return; }
   if (f.size > 10*1024*1024){ this.value=''; show('That file is over 10 MB. Please pick a smaller picture, or check the box to have Dean help.'); draw(); return; }
-  if (!/^image\/(png|jpe?g|gif|webp)$/i.test(f.type)){ $('need_help').checked=true; $('lowres').hidden=false; $('lowres').textContent='Got it. We cannot preview that file type here, so Dean will email you a proof to approve before anything prints.'; draw(); return; }
+  if (!/^image\/(png|jpe?g|gif|webp)$/i.test(f.type)){ $('need_help').checked=true; $('lowres').hidden=false; $('lowres').textContent='Got it. Dean will open that file and build your proof from it.'; draw(); return; }
   var im=new Image(); im.onload=function(){ logoImg=im; lowRes=Math.max(im.width,im.height)<900; $('lowres').hidden=!lowRes; draw(); }; im.onerror=function(){ draw(); }; im.src=URL.createObjectURL(f);
 });
 $('decal_addon').addEventListener('change', sums);
@@ -309,7 +345,6 @@ function show(msg){ var e=$('err'); e.textContent=msg; e.style.display=msg?'bloc
 function problems(){
   if (!pick) return 'Pick a gift first (step 1).';
   if (!$('business_name').value.trim()) return 'Enter the business name (step 2).';
-  if (!$('approved').checked && !$('need_help').checked) return 'Tick "I approve this layout", or tick the box to have Dean help with the design (step 2).';
   if (!$('buyer_name').value.trim()) return 'Enter your name.';
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($('email').value.trim())) return 'Enter a working email address.';
   var need=['ship_name','ship_address','ship_city','ship_state','ship_zip'];
@@ -331,7 +366,7 @@ function send(pp){
      if (typeof gtag==='function') gtag('event', j.pay_url ? 'begin_checkout' : 'purchase',{transaction_id:j.order,value:total(),currency:'USD',items:[{item_id:pick.id,item_name:pick.name,price:pick.price}]});
      if (typeof fbq==='function') fbq('track','Purchase',{value:total(),currency:'USD'});
      $('doneOrder').textContent=j.order; $('doneCoupon').textContent=j.coupon; $('doneExp').textContent = j.coupon_expires ? 'Good on LED sign kits only. Expires '+j.coupon_expires+'. ' : '';
-     $('doneMsg').textContent = j.proof_first ? 'Dean will email you a proof to approve before anything prints, usually within one business day.' : 'Your approved layout is headed to print. We will email tracking when it ships.';
+     $('doneMsg').textContent = 'We will reach out when your proof is ready for approval, usually within one business day. Nothing prints until you say yes.';
      if (j.pay_url){ $('doneHead').textContent='One more step: pay to start your order.'; $('payLink').href=j.pay_url; $('payLink').textContent='Pay $'+j.total+' now with PayPal'; $('payNow').hidden=false; }
      $('f').style.display='none'; Array.prototype.forEach.call(document.querySelectorAll('.hero,.step'),function(e){e.style.display='none';});
      $('done').style.display='block'; window.scrollTo(0,0);
@@ -359,7 +394,7 @@ if (!PAYPAL_CLIENT_ID){
       fundingSource: source,
       style: source===paypal.FUNDING.CARD ? {shape:'rect',height:50} : {shape:'rect',height:50,label:'paypal'},
       onClick:function(d,a){ var p=problems(); show(p); return p ? a.reject() : a.resolve(); },
-      createOrder:function(d,a){ return a.order.create({purchase_units:[{description:(pick.name+($('decal_addon').checked?' + Logo Decal Pack':'')).slice(0,120),amount:{currency_code:'USD',value:total().toFixed(2)},payee:(PAYPAL_PAYEE?{merchant_id:PAYPAL_PAYEE}:undefined)}],application_context:{shipping_preference:'NO_SHIPPING',brand_name:'DIY Sign Guy'}}); },
+      createOrder:function(d,a){ return a.order.create({purchase_units:[{description:(pick.name+adds().map(function(a){return ' + '+a.name;}).join('')+($('decal_addon').checked?' + Logo Decal Pack':'')).slice(0,120),amount:{currency_code:'USD',value:total().toFixed(2)},payee:(PAYPAL_PAYEE?{merchant_id:PAYPAL_PAYEE}:undefined)}],application_context:{shipping_preference:'NO_SHIPPING',brand_name:'DIY Sign Guy'}}); },
       onApprove:function(d,a){ return a.order.capture().then(send); },
       onError:function(){ show('That payment did not go through and you were not charged. Please try again, or call Dean at (314) 540-9472.'); }
     }; };
