@@ -68,7 +68,7 @@ canvas{width:100%;height:auto;border-radius:12px;border:1px solid var(--line);di
 .sum{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line)}
 .sum.t{font-size:22px;font-weight:800;border:0;padding-top:12px}
 .sum .g{color:var(--gold)}
-#paypal{margin-top:14px;min-height:50px}
+#paybox{margin-top:14px;min-height:50px}
 .paybtn{width:100%;padding:16px 18px;border:0;border-radius:12px;background:#ffc439;color:#111;font:inherit;font-weight:800;font-size:19px;cursor:pointer}
 .paybtn:disabled{opacity:.6;cursor:wait}
 .payhead{font-weight:800;font-size:19px;margin:4px 0 10px}
@@ -171,7 +171,7 @@ footer{margin:36px 0 0;padding:18px 0 40px;border-top:1px solid var(--line);colo
         <div class="sum"><span class="g">$100 off any DIY LED sign kit coupon</span><span class="g">FREE</span></div>
         <div class="sum t"><span>Total</span><span id="sumTotal">$0</span></div>
         <div class="err" id="err" role="alert"></div>
-        <div id="paypal"></div>
+        <div id="paybox"></div>
         <p class="sub" id="payNote" style="font-size:15px;margin:10px 0 0">Pay safely with PayPal or any card. You do not need a PayPal account.</p>
       </div>
     </div>
@@ -338,7 +338,7 @@ function send(pp){
 }
 // Fallback: take the order, then send the buyer to the PayPal.Me link. Used only if card checkout cannot load.
 function linkCheckout(){
-  $('paypal').innerHTML='<button type="button" class="paybtn" id="place">Place my order and pay with PayPal</button>';
+  $('paybox').innerHTML='<button type="button" class="paybtn" id="place">Place my order and pay with PayPal</button>';
   $('payNote').textContent='Next step: you pay securely on PayPal. Your order goes to print as soon as the payment arrives.';
   $('place').addEventListener('click', function(){
     var p=problems(); show(p); if (p) return;
@@ -352,6 +352,7 @@ if (!PAYPAL_CLIENT_ID){
   var s=document.createElement('script');
   s.src='https://www.paypal.com/sdk/js?client-id='+encodeURIComponent(PAYPAL_CLIENT_ID)+'&currency=USD&intent=capture&components=buttons&enable-funding=card&disable-funding=paylater,venmo';
   s.onload=function(){
+   try {
     var opts=function(source){ return {
       fundingSource: source,
       style: source===paypal.FUNDING.CARD ? {shape:'rect',height:50} : {shape:'rect',height:50,label:'paypal'},
@@ -361,11 +362,12 @@ if (!PAYPAL_CLIENT_ID){
       onError:function(){ show('That payment did not go through and you were not charged. Please try again, or call Dean at (314) 540-9472.'); }
     }; };
     var card=paypal.Buttons(opts(paypal.FUNDING.CARD)), pp=paypal.Buttons(opts(paypal.FUNDING.PAYPAL)), any=false;
-    $('paypal').innerHTML='<div class="payhead">Pay with any debit or credit card</div><div id="pp-card"></div><div class="payor" id="payor">or, if you have PayPal</div><div id="pp-paypal"></div>';
+    $('paybox').innerHTML='<div class="payhead">Pay with any debit or credit card</div><div id="pp-card"></div><div class="payor" id="payor">or, if you have PayPal</div><div id="pp-paypal"></div>';
     if (card.isEligible()){ card.render('#pp-card'); any=true; } else { document.querySelector('.payhead').style.display='none'; $('payor').style.display='none'; }
     if (pp.isEligible()){ pp.render('#pp-paypal'); any=true; } else { $('payor').style.display='none'; }
     if (!any) linkCheckout();
     else $('payNote').textContent='You do not need a PayPal account. Your card is processed securely by PayPal; we never see your card number.';
+   } catch (e) { linkCheckout(); }
   };
   s.onerror=linkCheckout;
   document.head.appendChild(s);
