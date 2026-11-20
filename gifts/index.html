@@ -77,6 +77,7 @@ canvas{width:100%;height:auto;border-radius:12px;border:1px solid var(--line);di
 .paybtn:disabled{opacity:.6;cursor:wait}
 .payhead{font-weight:800;font-size:19px;margin:4px 0 10px}
 .payor{text-align:center;color:var(--mut);font-size:15px;margin:14px 0 10px}
+.remind{margin:40px 0 0}.remind h2{font-size:26px;margin:0 0 4px}.remind .paybtn{margin-top:12px}.remind .fine{color:var(--mut);font-size:13px;margin:10px 0 0}
 .help{margin:40px 0 0;text-align:center}
 .help h2{font-size:32px}
 .help .big{font-size:28px;font-weight:800;color:#fff;text-decoration:none;display:inline-block;margin:8px 0}
@@ -204,6 +205,22 @@ fbq('init','2191721028406310');fbq('track','PageView');
     <p id="doneMsg" style="font-size:20px;max-width:680px;margin:14px auto 0"></p>
     <div class="coupon">Your free gift: $100 off any DIY outdoor lighted sign cabinet kit<b id="doneCoupon"></b><span id="doneExp"></span>We emailed this to you too. Print it and tuck it in with the gift.</div>
     <p>Order number <b id="doneOrder"></b></p>
+  </section>
+
+  <section class="remind" id="remind" aria-labelledby="rm">
+    <div class="card">
+      <h2 id="rm">Not ready to order yet?</h2>
+      <p class="sub">Leave your email and I will send you one reminder before the Dec 15 Christmas cutoff.</p>
+      <form id="remindForm" novalidate>
+        <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+        <label for="remindEmail">Your email</label>
+        <input type="email" id="remindEmail" name="email" autocomplete="email" inputmode="email" required>
+        <button type="submit" class="paybtn" id="remindBtn">Remind me</button>
+        <p class="fine">By signing up you agree to get emails from DIY Sign Guy about this offer. Unsubscribe any time.</p>
+      </form>
+      <div class="err" id="remindErr" role="alert"></div>
+      <div class="note" id="remindOk" style="display:none">Got it. I will email you a reminder before Dec 15.</div>
+    </div>
   </section>
 
   <section class="help">
@@ -417,6 +434,24 @@ if (!PAYPAL_CLIENT_ID){
 }
 // Arrive from an ad with ?gift=lobby-sign to have that gift picked already.
 var q=new URLSearchParams(location.search).get('gift'); if (q) choose(q,false);
+
+(function(){
+  var f=document.getElementById('remindForm'); if(!f) return;
+  var err=document.getElementById('remindErr'), ok=document.getElementById('remindOk'), btn=document.getElementById('remindBtn');
+  f.addEventListener('submit',function(e){
+    e.preventDefault();
+    var em=document.getElementById('remindEmail').value.trim();
+    err.style.display='none';
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){ err.textContent='Please enter a valid email address.'; err.style.display='block'; return; }
+    var d=new FormData(f); d.set('email',em);
+    try{ var g=new URLSearchParams(location.search).get('gift'); if(g) d.set('gift',g); }catch(x){}
+    btn.disabled=true;
+    fetch('lead.php',{method:'POST',body:d}).then(function(r){return r.json();}).then(function(j){
+      if(j&&j.ok){ f.style.display='none'; ok.style.display='block'; if(typeof fbq==='function') fbq('track','Lead'); }
+      else{ err.textContent=(j&&j.error)||'That did not go through. Please try again.'; err.style.display='block'; btn.disabled=false; }
+    }).catch(function(){ err.textContent='That did not go through. Please try again.'; err.style.display='block'; btn.disabled=false; });
+  });
+})();
 </script>
 </body>
 </html>
