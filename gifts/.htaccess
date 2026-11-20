@@ -1,0 +1,6 @@
+# Gifts page only: allow PayPal checkout and the buyer's own logo preview.
+# The rest of the site keeps the stricter policy set in the root .htaccess.
+<IfModule mod_headers.c>
+  Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; img-src 'self' data: blob: https://*.google-analytics.com https://*.googletagmanager.com https://*.paypal.com https://*.paypalobjects.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://*.googletagmanager.com https://*.google-analytics.com https://*.paypal.com https://*.paypalobjects.com; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://*.paypal.com https://*.paypalobjects.com; frame-src https://*.paypal.com https://*.paypalobjects.com; upgrade-insecure-requests"
+  Header always set Cross-Origin-Opener-Policy "same-origin-allow-popups"
+</IfModule>
