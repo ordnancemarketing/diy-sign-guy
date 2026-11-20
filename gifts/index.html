@@ -9,7 +9,7 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <meta name="theme-color" content="#080808">
 <meta property="og:title" content="Gifts for the business owner in your life | DIY Sign Guy">
-<meta property="og:description" content="Their logo on a sign, banner, truck magnets or yard signs. We do the design. Free $100 sign kit coupon with every order.">
+<meta property="og:description" content="Their logo on a sign, banner, truck magnets or yard signs. We do the design. Free $100 LED sign kit coupon with every order.">
 <meta property="og:image" content="https://diysignguy.com/images/gifts/diy-sign-guy-christmas-gift-lobby-sign.webp">
 <link rel="preload" href="/fonts/inter-var-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/barlow-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -71,6 +71,8 @@ canvas{width:100%;height:auto;border-radius:12px;border:1px solid var(--line);di
 #paypal{margin-top:14px;min-height:50px}
 .paybtn{width:100%;padding:16px 18px;border:0;border-radius:12px;background:#ffc439;color:#111;font:inherit;font-weight:800;font-size:19px;cursor:pointer}
 .paybtn:disabled{opacity:.6;cursor:wait}
+.payhead{font-weight:800;font-size:19px;margin:4px 0 10px}
+.payor{text-align:center;color:var(--mut);font-size:15px;margin:14px 0 10px}
 .help{margin:40px 0 0;text-align:center}
 .help h2{font-size:32px}
 .help .big{font-size:28px;font-weight:800;color:#fff;text-decoration:none;display:inline-block;margin:8px 0}
@@ -95,7 +97,7 @@ footer{margin:36px 0 0;padding:18px 0 40px;border-top:1px solid var(--line);colo
     <h1>Gifts for the <span>business owner</span> in your life</h1>
     <p>Put their logo on something they will use every day. You pick the gift and send us their logo. We do the design, print it and ship it.</p>
     <div class="strip">
-      <div class="free">FREE $100 off any DIY sign kit with every order</div>
+      <div class="free">FREE $100 off any DIY LED sign kit with every order</div>
       <div>Order by Dec 15 for Christmas delivery</div>
       <div>No artwork needed</div>
     </div>
@@ -166,7 +168,7 @@ footer{margin:36px 0 0;padding:18px 0 40px;border-top:1px solid var(--line);colo
         <label class="check"><input type="checkbox" id="decal_addon" name="decal_addon" value="1"> <span><b>Add the Logo Decal Pack for $49.</b> Their logo as weatherproof decals for doors, windows, toolboxes and trailers. Ships in the same box.</span></label>
         <div class="sum" id="sumDecal" hidden><span>Logo Decal Pack</span><span>$49</span></div>
         <div class="sum"><span>Design and shipping</span><span>Included</span></div>
-        <div class="sum"><span class="g">$100 off any DIY sign kit coupon</span><span class="g">FREE</span></div>
+        <div class="sum"><span class="g">$100 off any DIY LED sign kit coupon</span><span class="g">FREE</span></div>
         <div class="sum t"><span>Total</span><span id="sumTotal">$0</span></div>
         <div class="err" id="err" role="alert"></div>
         <div id="paypal"></div>
@@ -183,7 +185,7 @@ footer{margin:36px 0 0;padding:18px 0 40px;border-top:1px solid var(--line);colo
       <p class="sub" style="margin:10px auto 0;max-width:560px">This opens PayPal with your total filled in. Your order prints as soon as the payment arrives. Trouble paying? Call or text Dean at (314) 540-9472.</p>
     </div>
     <p id="doneMsg" style="font-size:20px;max-width:680px;margin:14px auto 0"></p>
-    <div class="coupon">Your free gift: $100 off any DIY sign kit<b id="doneCoupon"></b>We emailed this to you too. Print it and tuck it in with the gift.</div>
+    <div class="coupon">Your free gift: $100 off any DIY LED sign kit<b id="doneCoupon"></b><span id="doneExp"></span>We emailed this to you too. Print it and tuck it in with the gift.</div>
     <p>Order number <b id="doneOrder"></b></p>
   </section>
 
@@ -198,7 +200,7 @@ footer{margin:36px 0 0;padding:18px 0 40px;border-top:1px solid var(--line);colo
 
 <script>
 // PayPal Client ID for the DIY Sign Guy business account. Empty = checkout not switched on yet.
-var PAYPAL_CLIENT_ID = '';
+var PAYPAL_CLIENT_ID = 'BAA7-S94TAkudQan038nXr0Gi0L2h5I-h6zQpuzRkd5amEbN2cy416mJE7JOqBebH-CooXclThmXJ0aHYE';
 // With no Client ID the page takes the order, then sends the buyer to this PayPal.Me link with the amount filled in.
 var PAYPAL_ME = 'https://www.paypal.com/paypalme/fortune5sign/';
 var DECAL = 49;
@@ -326,7 +328,7 @@ function send(pp){
      if (!j.ok) throw new Error(j.error||'Something went wrong.');
      if (typeof gtag==='function') gtag('event', j.pay_url ? 'begin_checkout' : 'purchase',{transaction_id:j.order,value:total(),currency:'USD',items:[{item_id:pick.id,item_name:pick.name,price:pick.price}]});
      if (typeof fbq==='function') fbq('track','Purchase',{value:total(),currency:'USD'});
-     $('doneOrder').textContent=j.order; $('doneCoupon').textContent=j.coupon;
+     $('doneOrder').textContent=j.order; $('doneCoupon').textContent=j.coupon; $('doneExp').textContent = j.coupon_expires ? 'Good on LED sign kits only. Expires '+j.coupon_expires+'. ' : '';
      $('doneMsg').textContent = j.proof_first ? 'Dean will email you a proof to approve before anything prints, usually within one business day.' : 'Your approved layout is headed to print. We will email tracking when it ships.';
      if (j.pay_url){ $('doneHead').textContent='One more step: pay to start your order.'; $('payLink').href=j.pay_url; $('payLink').textContent='Pay $'+j.total+' now with PayPal'; $('payNow').hidden=false; }
      $('f').style.display='none'; Array.prototype.forEach.call(document.querySelectorAll('.hero,.step'),function(e){e.style.display='none';});
@@ -334,7 +336,8 @@ function send(pp){
    })
    .catch(function(e){ show(pp.id ? 'Your payment went through, but we hit a problem saving the order: '+e.message+' Please call Dean at (314) 540-9472 with PayPal order '+pp.id+'.' : 'We could not send your order: '+e.message+' You have not been charged. Please try again, or call Dean at (314) 540-9472.'); });
 }
-if (!PAYPAL_CLIENT_ID){
+// Fallback: take the order, then send the buyer to the PayPal.Me link. Used only if card checkout cannot load.
+function linkCheckout(){
   $('paypal').innerHTML='<button type="button" class="paybtn" id="place">Place my order and pay with PayPal</button>';
   $('payNote').textContent='Next step: you pay securely on PayPal. Your order goes to print as soon as the payment arrives.';
   $('place').addEventListener('click', function(){
@@ -342,19 +345,29 @@ if (!PAYPAL_CLIENT_ID){
     var btn=this; btn.disabled=true; btn.textContent='Sending your order...';
     send({id:'',status:'AWAITING'}).then(function(){ btn.disabled=false; btn.textContent='Place my order and pay with PayPal'; });
   });
+}
+if (!PAYPAL_CLIENT_ID){
+  linkCheckout();
 } else {
   var s=document.createElement('script');
-  s.src='https://www.paypal.com/sdk/js?client-id='+encodeURIComponent(PAYPAL_CLIENT_ID)+'&currency=USD&intent=capture&disable-funding=paylater';
+  s.src='https://www.paypal.com/sdk/js?client-id='+encodeURIComponent(PAYPAL_CLIENT_ID)+'&currency=USD&intent=capture&components=buttons&enable-funding=card&disable-funding=paylater,venmo';
   s.onload=function(){
-    paypal.Buttons({
-      style:{layout:'vertical',shape:'rect',label:'pay'},
+    var opts=function(source){ return {
+      fundingSource: source,
+      style: source===paypal.FUNDING.CARD ? {shape:'rect',height:50} : {shape:'rect',height:50,label:'paypal'},
       onClick:function(d,a){ var p=problems(); show(p); return p ? a.reject() : a.resolve(); },
       createOrder:function(d,a){ return a.order.create({purchase_units:[{description:(pick.name+($('decal_addon').checked?' + Logo Decal Pack':'')).slice(0,120),amount:{currency_code:'USD',value:total().toFixed(2)}}],application_context:{shipping_preference:'NO_SHIPPING',brand_name:'DIY Sign Guy'}}); },
       onApprove:function(d,a){ return a.order.capture().then(send); },
-      onError:function(){ show('PayPal had a problem and you were not charged. Please try again, or call Dean at (314) 540-9472.'); }
-    }).render('#paypal');
+      onError:function(){ show('That payment did not go through and you were not charged. Please try again, or call Dean at (314) 540-9472.'); }
+    }; };
+    var card=paypal.Buttons(opts(paypal.FUNDING.CARD)), pp=paypal.Buttons(opts(paypal.FUNDING.PAYPAL)), any=false;
+    $('paypal').innerHTML='<div class="payhead">Pay with any debit or credit card</div><div id="pp-card"></div><div class="payor" id="payor">or, if you have PayPal</div><div id="pp-paypal"></div>';
+    if (card.isEligible()){ card.render('#pp-card'); any=true; } else { document.querySelector('.payhead').style.display='none'; $('payor').style.display='none'; }
+    if (pp.isEligible()){ pp.render('#pp-paypal'); any=true; } else { $('payor').style.display='none'; }
+    if (!any) linkCheckout();
+    else $('payNote').textContent='You do not need a PayPal account. Your card is processed securely by PayPal; we never see your card number.';
   };
-  s.onerror=function(){ $('paypal').innerHTML='<div class="note">Checkout could not load. Please call or text Dean at (314) 540-9472.</div>'; };
+  s.onerror=linkCheckout;
   document.head.appendChild(s);
 }
 // Arrive from an ad with ?gift=lobby-sign to have that gift picked already.
