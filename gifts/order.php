@@ -132,6 +132,7 @@ foreach (['logo' => ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'pdf', 'svg', 
 
 $orderId = 'G' . date('ymd') . '-' . strtoupper(bin2hex(random_bytes(2)));
 $coupon  = 'KIT100-' . strtoupper(bin2hex(random_bytes(3)));
+$couponExpires = date('F j, Y', strtotime('+1 year'));   // coupon is good for one year, LED sign kits only
 $viaLink = $f['paypal_order_id'] === '';   // no on-page checkout: buyer pays through the PayPal.Me link
 $payUrl  = PAYPAL_ME . $total;
 $paidOk  = !$viaLink && abs((float)$f['paypal_amount'] - (float)$total) < 0.01 && strtoupper($f['paypal_status']) === 'COMPLETED';
@@ -142,7 +143,7 @@ if ($lowRes)   $flags[] = 'LOGO IS LOW RESOLUTION';
 if (!isset($files['logo'])) $flags[] = 'NO LOGO UPLOADED (name only)';
 if (!$viaLink && !$paidOk) $flags[] = 'PAYMENT AMOUNT/STATUS DOES NOT MATCH - CHECK PAYPAL BEFORE PRINTING';
 
-$record = ['order' => $orderId, 'coupon' => $coupon, 'time' => date('c'), 'gift' => $key, 'gift_name' => $giftName,
+$record = ['order' => $orderId, 'coupon' => $coupon, 'coupon_expires' => $couponExpires, 'time' => date('c'), 'gift' => $key, 'gift_name' => $giftName,
            'price' => $price, 'decal_addon' => $decal, 'total' => $total, 'approved' => $approved, 'flags' => $flags,
            'ip' => clean((string)($_SERVER['REMOTE_ADDR'] ?? ''))] + $f;
 
@@ -151,14 +152,14 @@ $dir = dirname(__DIR__, 2) . '/private/gift-orders/' . $orderId;
 if (@mkdir($dir, 0700, true) || is_dir($dir)) {
     @file_put_contents($dir . '/order.json', json_encode($record, JSON_PRETTY_PRINT));
     foreach ($files as [$nm, $data]) @file_put_contents($dir . '/' . $nm, $data);
-    @file_put_contents(dirname($dir) . '/coupons.csv', $coupon . ',' . $orderId . ',' . date('Y-m-d') . ',' . str_replace(',', ' ', $f['email']) . "\n", FILE_APPEND | LOCK_EX);
+    @file_put_contents(dirname($dir) . '/coupons.csv', $coupon . ',' . $orderId . ',' . date('Y-m-d') . ',' . date('Y-m-d', strtotime('+1 year')) . ',' . str_replace(',', ' ', $f['email']) . "\n", FILE_APPEND | LOCK_EX);
 }
 
 $rows = '';
 $show = ['Order' => $orderId, 'Gift' => $giftName . ' ($' . $price . ')', 'Decal pack add-on' => $decal ? 'YES (+$' . DECAL_ADDON . ')' : 'no',
          'Total' => '$' . $total, 'Payment' => $viaLink ? 'NOT PAID YET. Buyer was sent to PayPal to pay $' . $total . '. Look for $' . $total . ' from ' . $f['buyer_name'] . ' in PayPal before this prints.'
                                                     : $f['paypal_order_id'] . ' / ' . $f['paypal_status'] . ' / $' . $f['paypal_amount'] . ' / ' . $f['paypal_payer_email'],
-         'Coupon code sent' => $coupon, 'Business name' => $f['business_name'], 'Extra text for the sign' => $f['sign_text'],
+         'Coupon code sent' => $coupon . ' (expires ' . $couponExpires . ', LED sign kits only)', 'Business name' => $f['business_name'], 'Extra text for the sign' => $f['sign_text'],
          'Layout approved on page' => $approved ? 'YES' : 'no', 'Buyer' => $f['buyer_name'] . ' / ' . $f['email'] . ' / ' . $f['phone'],
          'Ship to' => $f['ship_name'] . ', ' . $f['ship_address'] . ' ' . $f['ship_address2'] . ', ' . $f['ship_city'] . ', ' . $f['ship_state'] . ' ' . $f['ship_zip'],
          'Notes' => $f['notes']];
@@ -190,8 +191,8 @@ $next = ($needHelp || $lowRes || !isset($files['logo']))
     : "Your approved layout goes to print as soon as your payment arrives. You will get tracking by email when it ships.";
 $payLine = $viaLink ? "TO FINISH YOUR ORDER, PAY HERE: $payUrl\r\n(If you already paid, thank you. You can ignore this line.)\r\n\r\n" : '';
 $txt = "Thank you for your order with DIY Sign Guy.\r\n\r\nOrder: $orderId\r\nGift: $giftName" . ($decal ? " + Logo Decal Pack" : "") . "\r\nTotal: \$$total\r\n\r\n$payLine$next\r\n\r\n"
-     . "YOUR FREE GIFT: \$100 off any DIY sign kit at diysignguy.com.\r\nCoupon code: $coupon\r\nPrint this email or forward it and tuck it in with the gift.\r\n\r\n"
+     . "YOUR FREE GIFT: \$100 off any DIY LED sign kit at diysignguy.com.\r\nCoupon code: $coupon\r\nGood on LED sign kits only. Expires $couponExpires.\r\nPrint this email or forward it and tuck it in with the gift.\r\n\r\n"
      . "Questions? Call or text Dean at " . HELP . " or reply to this email.\r\n\r\nDIY Sign Guy\r\nhttps://diysignguy.com";
 @send_mail($f['email'], '=?UTF-8?B?' . base64_encode('Your DIY Sign Guy gift order ' . $orderId) . '?=', $txt, 'DIY Sign Guy', 'Reply-To: ' . TO . "\r\nContent-Type: text/plain; charset=UTF-8");
 
-out(200, ['ok' => true, 'order' => $orderId, 'coupon' => $coupon, 'total' => $total, 'pay_url' => $viaLink ? $payUrl : null, 'proof_first' => ($needHelp || $lowRes || !isset($files['logo']))]);
+out(200, ['ok' => true, 'order' => $orderId, 'coupon' => $coupon, 'coupon_expires' => $couponExpires, 'total' => $total, 'pay_url' => $viaLink ? $payUrl : null, 'proof_first' => ($needHelp || $lowRes || !isset($files['logo']))]);
