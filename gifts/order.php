@@ -218,6 +218,17 @@ if (@mkdir($dir, 0700, true) || is_dir($dir)) {
     @file_put_contents($dir . '/order.json', json_encode($record, JSON_PRETTY_PRINT));
     foreach ($files as [$nm, $data]) @file_put_contents($dir . '/' . $nm, $data);
     @file_put_contents(dirname($dir) . '/coupons.csv', $coupon . ',' . $orderId . ',' . date('Y-m-d') . ',' . date('Y-m-d', strtotime('+1 year')) . ',' . str_replace(',', ' ', $f['email']) . "\n", FILE_APPEND | LOCK_EX);
+    // Master customer list: one row per order, for follow-up emails (coupon reminders, offers).
+    $list = dirname($dir) . '/customers.csv';
+    $isNew = !is_file($list);
+    if ($fh = @fopen($list, 'ab')) {
+        if (flock($fh, LOCK_EX)) {
+            if ($isNew) fputcsv($fh, ['date', 'order', 'buyer_name', 'business_name', 'email', 'phone', 'ship_city', 'ship_state', 'gift', 'addons', 'total', 'coupon', 'coupon_expires']);
+            fputcsv($fh, [date('Y-m-d'), $orderId, $f['buyer_name'] ?? '', $f['business_name'] ?? '', $f['email'] ?? '', $f['phone'] ?? '', $f['ship_city'] ?? '', $f['ship_state'] ?? '', $giftName, implode(' + ', array_keys($adds)), $total, $coupon, date('Y-m-d', strtotime('+1 year'))]);
+            flock($fh, LOCK_UN);
+        }
+        fclose($fh);
+    }
 }
 
 $rows = '';
