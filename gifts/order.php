@@ -258,7 +258,7 @@ if (!$sent && !is_file($dir . '/order.json')) out(500, ['ok' => false, 'error' =
 $next = "We will reach out when your proof is ready for approval, usually within one business day. Nothing prints until you say yes.";
 $payLine = $viaLink ? "TO FINISH YOUR ORDER, PAY HERE: $payUrl\r\n(If you already paid, thank you. You can ignore this line.)\r\n\r\n" : '';
 $txt = "Thank you for your order with DIY Sign Guy.\r\n\r\nOrder: $orderId\r\nGift: $giftName" . ($adds ? " + " . implode(" + ", array_column($adds, 0)) : "") . ($decal ? " + Logo Decal Pack" : "") . "\r\nTotal: " . $fmt($total) . "\r\n\r\n$payLine$next\r\n\r\n"
-     . "YOUR FREE GIFT: \$100 off any DIY LED sign kit at diysignguy.com.\r\nCoupon code: $coupon\r\nGood on LED sign kits only. Expires $couponExpires.\r\nPrint this email or forward it and tuck it in with the gift.\r\n\r\n"
+     . "YOUR FREE GIFT: \$100 off any DIY outdoor lighted sign cabinet kit at diysignguy.com.\r\nCoupon code: $coupon\r\nGood for one year, on lighted (LED) sign cabinet kits only. Expires $couponExpires.\r\nPrint this email or forward it and tuck it in with the gift.\r\n\r\n"
      . "Questions? Call or text Dean at " . HELP . " or reply to this email.\r\n\r\nDIY Sign Guy\r\nhttps://diysignguy.com";
 @send_mail($f['email'], '=?UTF-8?B?' . base64_encode('Your DIY Sign Guy gift order ' . $orderId) . '?=', $txt, 'DIY Sign Guy', 'Reply-To: ' . TO . "\r\nContent-Type: text/plain; charset=UTF-8");
 
