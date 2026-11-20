@@ -202,6 +202,8 @@ footer{margin:36px 0 0;padding:18px 0 40px;border-top:1px solid var(--line);colo
 // PayPal Client ID for the DIY Sign Guy business account. Empty = checkout not switched on yet.
 var PAYPAL_CLIENT_ID = 'BAA7-S94TAkudQan038nXr0Gi0L2h5I-h6zQpuzRkd5amEbN2cy416mJE7JOqBebH-CooXclThmXJ0aHYE';
 // With no Client ID the page takes the order, then sends the buyer to this PayPal.Me link with the amount filled in.
+// Payments are deposited straight into Dean's long-time PayPal account (public merchant ID, not a secret).
+var PAYPAL_PAYEE = 'PS86TKFQUPFJL';
 var PAYPAL_ME = 'https://www.paypal.com/paypalme/fortune5sign/';
 var DECAL = 49;
 var GIFTS = [
@@ -350,14 +352,14 @@ if (!PAYPAL_CLIENT_ID){
   linkCheckout();
 } else {
   var s=document.createElement('script');
-  s.src='https://www.paypal.com/sdk/js?client-id='+encodeURIComponent(PAYPAL_CLIENT_ID)+'&currency=USD&intent=capture&components=buttons&enable-funding=card&disable-funding=paylater,venmo';
+  s.src='https://www.paypal.com/sdk/js?client-id='+encodeURIComponent(PAYPAL_CLIENT_ID)+(PAYPAL_PAYEE?'&merchant-id='+PAYPAL_PAYEE:'')+'&currency=USD&intent=capture&components=buttons&enable-funding=card&disable-funding=paylater,venmo';
   s.onload=function(){
    try {
     var opts=function(source){ return {
       fundingSource: source,
       style: source===paypal.FUNDING.CARD ? {shape:'rect',height:50} : {shape:'rect',height:50,label:'paypal'},
       onClick:function(d,a){ var p=problems(); show(p); return p ? a.reject() : a.resolve(); },
-      createOrder:function(d,a){ return a.order.create({purchase_units:[{description:(pick.name+($('decal_addon').checked?' + Logo Decal Pack':'')).slice(0,120),amount:{currency_code:'USD',value:total().toFixed(2)}}],application_context:{shipping_preference:'NO_SHIPPING',brand_name:'DIY Sign Guy'}}); },
+      createOrder:function(d,a){ return a.order.create({purchase_units:[{description:(pick.name+($('decal_addon').checked?' + Logo Decal Pack':'')).slice(0,120),amount:{currency_code:'USD',value:total().toFixed(2)},payee:(PAYPAL_PAYEE?{merchant_id:PAYPAL_PAYEE}:undefined)}],application_context:{shipping_preference:'NO_SHIPPING',brand_name:'DIY Sign Guy'}}); },
       onApprove:function(d,a){ return a.order.capture().then(send); },
       onError:function(){ show('That payment did not go through and you were not charged. Please try again, or call Dean at (314) 540-9472.'); }
     }; };
