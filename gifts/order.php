@@ -86,6 +86,54 @@ function send_mail(string $to, string $subject, string $body, string $fromName, 
     return mail($to, $subject, $body, 'From: ' . $fromName . ' <' . FROM . ">\r\n" . $extraHeaders, '-f' . FROM);
 }
 
+// Longest printed side, in inches, of each gift and add-on. Used by the art audit.
+const PRINT_INCHES = ['lobby-sign' => 24, 'shop-wall-sign' => 36, 'business-starter-bundle' => 72, 'pop-up-banner-stand' => 80,
+    'yard-sign-10-pack' => 24, 'banner' => 72, 'truck-door-magnets' => 24, 'large-truck-door-magnets' => 24, 'contractor-pack' => 24, 'office-pack' => 36];
+
+// Art audit: grades the uploaded logo GREEN / YELLOW / RED before anyone builds a print file from it.
+// GREEN = usable as is. YELLOW = clean art that must be traced to vector. RED = redraw, or ask for a better file.
+function art_audit(?array $logo, int $inches): array {
+    if ($logo === null) return ['RED', 'No logo uploaded. Design from the business name, or ask the customer for a logo.', ''];
+    [$name, $data] = $logo;
+    $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+    if (in_array($ext, ['svg', 'ai', 'eps', 'pdf'], true)) return ['GREEN', 'Vector file (' . strtoupper($ext) . '). Prints sharp at any size. Open it and check it before layout.', ''];
+    $info = @getimagesizefromstring($data);
+    if (!$info) return ['RED', 'Could not read this file as a picture (' . strtoupper($ext) . '). Open it by hand, or ask for a JPG or PNG.', ''];
+    [$w, $h] = $info;
+    $long = max($w, $h);
+    $dpi  = (int)floor($long / max(1, $inches));
+    $size = $w . ' x ' . $h . ' px = ' . $dpi . ' DPI stretched across ' . $inches . ' in';
+    $photo = false; $why = '';
+    if ($info[2] === IMAGETYPE_JPEG && function_exists('exif_read_data')) {
+        $tmp = tempnam(sys_get_temp_dir(), 'ga');
+        if ($tmp !== false) {
+            file_put_contents($tmp, $data);
+            $ex = @exif_read_data($tmp);
+            @unlink($tmp);
+            if (is_array($ex) && (!empty($ex['Make']) || !empty($ex['Model']))) { $photo = true; $why = 'taken with a camera (' . trim(($ex['Make'] ?? '') . ' ' . ($ex['Model'] ?? '')) . ')'; }
+        }
+    }
+    if (!$photo && $info[2] === IMAGETYPE_JPEG && $w * $h >= 5000000) { $photo = true; $why = 'camera-size JPG'; }
+    if (!$photo && function_exists('imagecreatefromstring') && $w * $h <= 40000000) {
+        try {
+            @ini_set('memory_limit', '512M');
+            $im = @imagecreatefromstring($data);
+            if ($im) {
+                $sm = imagecreatetruecolor(48, 48);
+                imagefill($sm, 0, 0, imagecolorallocate($sm, 255, 255, 255));
+                imagecopyresampled($sm, $im, 0, 0, 0, 0, 48, 48, $w, $h);
+                $bins = [];
+                for ($y = 0; $y < 48; $y++) for ($x = 0; $x < 48; $x++) { $c = imagecolorat($sm, $x, $y); $bins[(($c >> 21) & 7) << 6 | (($c >> 13) & 7) << 3 | (($c >> 5) & 7)] = 1; }
+                if (count($bins) > 60) { $photo = true; $why = 'many shades and colors, like a photograph'; }
+            }
+        } catch (\Throwable $e) { /* audit is best effort */ }
+    }
+    if ($dpi >= 300 && !$photo) return ['GREEN', 'Clean art, sharp enough to print as is.', $size];
+    if ($photo) return ['RED', 'This is a photo of a logo, not a logo file (' . $why . '). It must be redrawn clean before it prints. If it cannot be redrawn faithfully, ask the customer for a better file.', $size];
+    if ($long >= 1000) return ['YELLOW', 'Clean art but not 300 DPI at print size. Trace it to vector before layout.', $size];
+    return ['RED', 'Small picture. Too little detail to trace faithfully: redraw it, or ask the customer for a better file.', $size];
+}
+
 function out(int $code, array $data): void {
     http_response_code($code);
     header('Content-Type: application/json; charset=utf-8');
@@ -152,14 +200,16 @@ $viaLink = $f['paypal_order_id'] === '';   // no on-page checkout: buyer pays th
 $payUrl  = PAYPAL_ME . rtrim(rtrim(number_format((float)$total, 2, '.', ''), '0'), '.');
 $paidOk  = !$viaLink && abs((float)$f['paypal_amount'] - (float)$total) < 0.01 && strtoupper($f['paypal_status']) === 'COMPLETED';
 
+$inches = PRINT_INCHES[$key] ?? 24;
+foreach (array_keys($adds) as $a) $inches = max($inches, PRINT_INCHES[$a] ?? 24);
+[$artGrade, $artNote, $artSize] = art_audit($files['logo'] ?? null, $inches);
+
 $flags = [];
-if ($needHelp) $flags[] = 'CUSTOMER ASKED FOR DESIGN HELP';
-if ($lowRes)   $flags[] = 'LOGO IS LOW RESOLUTION';
-if (!isset($files['logo'])) $flags[] = 'NO LOGO UPLOADED (name only)';
+if ($needHelp) $flags[] = 'CUSTOMER HAS NO LOGO - DESIGN ONE FROM THE NAME';
 if (!$viaLink && !$paidOk) $flags[] = 'PAYMENT AMOUNT/STATUS DOES NOT MATCH - CHECK PAYPAL BEFORE PRINTING';
 
 $record = ['order' => $orderId, 'coupon' => $coupon, 'coupon_expires' => $couponExpires, 'time' => date('c'), 'gift' => $key, 'gift_name' => $giftName,
-           'price' => $price, 'addons' => array_keys($adds), 'decal_addon' => $decal, 'decal_price' => $decal ? $decalPrice : 0, 'total' => $total, 'approved' => $approved, 'flags' => $flags,
+           'price' => $price, 'addons' => array_keys($adds), 'decal_addon' => $decal, 'decal_price' => $decal ? $decalPrice : 0, 'total' => $total, 'approved' => $approved, 'art_grade' => $artGrade, 'art_note' => $artNote, 'art_size' => $artSize, 'flags' => $flags,
            'ip' => clean((string)($_SERVER['REMOTE_ADDR'] ?? ''))] + $f;
 
 // Keep a copy outside the public site (best effort; the email to Dean is the record of last resort).
@@ -174,7 +224,7 @@ $rows = '';
 $show = ['Order' => $orderId, 'Gift' => $giftName . ' ($' . $price . ')', 'Add-ons' => $addNames !== '' ? $addNames : 'none', 'Decal pack add-on' => $decal ? 'YES (+' . $fmt($decalPrice) . ')' : 'no',
          'Total' => $fmt($total), 'Payment' => $viaLink ? 'NOT PAID YET. Buyer was sent to PayPal to pay ' . $fmt($total) . '. Look for ' . $fmt($total) . ' from ' . $f['buyer_name'] . ' in PayPal before this prints.'
                                                     : $f['paypal_order_id'] . ' / ' . $f['paypal_status'] . ' / $' . $f['paypal_amount'] . ' / ' . $f['paypal_payer_email'],
-         'Coupon code sent' => $coupon . ' (expires ' . $couponExpires . ', LED sign kits only)', 'Business name' => $f['business_name'], 'Extra text for the sign' => $f['sign_text'],
+         'Coupon code sent' => $coupon . ' (expires ' . $couponExpires . ', LED sign kits only)', 'Art audit' => $artGrade . ': ' . $artNote . ($artSize !== '' ? ' [' . $artSize . ']' : ''), 'Business name' => $f['business_name'], 'Extra text for the sign' => $f['sign_text'],
          'Proof' => 'NOT APPROVED YET. Build the proof and get the customer\'s OK before this prints.', 'Buyer' => $f['buyer_name'] . ' / ' . $f['email'] . ' / ' . $f['phone'],
          'Ship to' => $f['ship_name'] . ', ' . $f['ship_address'] . ' ' . $f['ship_address2'] . ', ' . $f['ship_city'] . ', ' . $f['ship_state'] . ' ' . $f['ship_zip'],
          'Notes' => $f['notes']];
@@ -182,9 +232,13 @@ foreach ($show as $label => $v) {
     $rows .= '<tr><th align="left" valign="top" style="padding:6px 10px;background:#f3f3f3;border:1px solid #ddd">' . htmlspecialchars($label)
            . '</th><td style="padding:6px 10px;border:1px solid #ddd">' . nl2br(htmlspecialchars((string)$v)) . '</td></tr>';
 }
-$flagHtml = $flags ? '<p style="background:#fde8e8;border:1px solid #c00;padding:10px;font-weight:bold">NEEDS DEAN: ' . htmlspecialchars(implode(' | ', $flags)) . '</p>'
-                   : '<p style="background:#e8f7e8;border:1px solid #2a2;padding:10px">Paid order. Next step: build the proof and get the customer\'s approval.' . ($viaLink ? ' Check that the PayPal payment showed up first.' : '') . '</p>';
-$subject = ($flags ? 'NEEDS DEAN - ' : '') . 'GIFT ORDER ' . $orderId . ' - ' . $giftName . ' - ' . $fmt($total) . ($viaLink ? ' - AWAITING PAYPAL PAYMENT' : '');
+$artColor = ['GREEN' => ['#e8f7e8', '#2a2'], 'YELLOW' => ['#fff6d6', '#c90'], 'RED' => ['#fde8e8', '#c00']][$artGrade];
+$flagHtml = '<p style="background:' . $artColor[0] . ';border:2px solid ' . $artColor[1] . ';padding:10px"><b>ART AUDIT: ' . $artGrade . '.</b> ' . htmlspecialchars($artNote)
+          . ($artSize !== '' ? '<br><small>' . htmlspecialchars($artSize) . '</small>' : '') . '</p>'
+          . ($flags ? '<p style="background:#fde8e8;border:1px solid #c00;padding:10px;font-weight:bold">NEEDS DEAN: ' . htmlspecialchars(implode(' | ', $flags)) . '</p>' : '')
+          . '<p style="padding:0 10px">Paid order. Next step: build the print file, pass the print-file check, and get Dean\'s OK and the customer\'s OK on the proof. Nothing goes to the printer before that.'
+          . ($viaLink ? ' Check that the PayPal payment showed up first.' : '') . '</p>';
+$subject = ($flags ? 'NEEDS DEAN - ' : '') . 'ART ' . $artGrade . ' - GIFT ORDER ' . $orderId . ' - ' . $giftName . ' - ' . $fmt($total) . ($viaLink ? ' - AWAITING PAYPAL PAYMENT' : '');
 $html = '<html><body style="font-family:sans-serif"><h2>' . htmlspecialchars($subject) . '</h2>' . $flagHtml
       . '<table cellspacing="0" style="border-collapse:collapse">' . $rows . '</table></body></html>';
 
