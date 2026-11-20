@@ -69,6 +69,8 @@ canvas{width:100%;height:auto;border-radius:12px;border:1px solid var(--line);di
 .sum.t{font-size:22px;font-weight:800;border:0;padding-top:12px}
 .sum .g{color:var(--gold)}
 #paypal{margin-top:14px;min-height:50px}
+.paybtn{width:100%;padding:16px 18px;border:0;border-radius:12px;background:#ffc439;color:#111;font:inherit;font-weight:800;font-size:19px;cursor:pointer}
+.paybtn:disabled{opacity:.6;cursor:wait}
 .help{margin:40px 0 0;text-align:center}
 .help h2{font-size:32px}
 .help .big{font-size:28px;font-weight:800;color:#fff;text-decoration:none;display:inline-block;margin:8px 0}
@@ -175,7 +177,11 @@ footer{margin:36px 0 0;padding:18px 0 40px;border-top:1px solid var(--line);colo
   </form>
 
   <section class="done" id="done" aria-live="polite">
-    <h1>Thank you. Your order is in.</h1>
+    <h1 id="doneHead">Thank you. Your order is in.</h1>
+    <div id="payNow" hidden style="margin:22px 0 6px">
+      <a class="paybtn" id="payLink" href="#" rel="noopener" style="display:inline-block;text-decoration:none;max-width:460px">Pay now with PayPal</a>
+      <p class="sub" style="margin:10px auto 0;max-width:560px">This opens PayPal with your total filled in. Your order prints as soon as the payment arrives. Trouble paying? Call or text Dean at (314) 540-9472.</p>
+    </div>
     <p id="doneMsg" style="font-size:20px;max-width:680px;margin:14px auto 0"></p>
     <div class="coupon">Your free gift: $100 off any DIY sign kit<b id="doneCoupon"></b>We emailed this to you too. Print it and tuck it in with the gift.</div>
     <p>Order number <b id="doneOrder"></b></p>
@@ -193,6 +199,8 @@ footer{margin:36px 0 0;padding:18px 0 40px;border-top:1px solid var(--line);colo
 <script>
 // PayPal Client ID for the DIY Sign Guy business account. Empty = checkout not switched on yet.
 var PAYPAL_CLIENT_ID = '';
+// With no Client ID the page takes the order, then sends the buyer to this PayPal.Me link with the amount filled in.
+var PAYPAL_ME = 'https://www.paypal.com/paypalme/fortune5sign/';
 var DECAL = 49;
 var GIFTS = [
  {id:'lobby-sign',name:'The Lobby Sign',price:179,pieces:[['18" x 24" clear acrylic on standoffs',4/3,'acrylic']]},
@@ -316,17 +324,24 @@ function send(pp){
    .then(function(r){ return r.json(); })
    .then(function(j){
      if (!j.ok) throw new Error(j.error||'Something went wrong.');
-     if (typeof gtag==='function') gtag('event','purchase',{transaction_id:j.order,value:total(),currency:'USD',items:[{item_id:pick.id,item_name:pick.name,price:pick.price}]});
+     if (typeof gtag==='function') gtag('event', j.pay_url ? 'begin_checkout' : 'purchase',{transaction_id:j.order,value:total(),currency:'USD',items:[{item_id:pick.id,item_name:pick.name,price:pick.price}]});
      if (typeof fbq==='function') fbq('track','Purchase',{value:total(),currency:'USD'});
      $('doneOrder').textContent=j.order; $('doneCoupon').textContent=j.coupon;
      $('doneMsg').textContent = j.proof_first ? 'Dean will email you a proof to approve before anything prints, usually within one business day.' : 'Your approved layout is headed to print. We will email tracking when it ships.';
+     if (j.pay_url){ $('doneHead').textContent='One more step: pay to start your order.'; $('payLink').href=j.pay_url; $('payLink').textContent='Pay $'+j.total+' now with PayPal'; $('payNow').hidden=false; }
      $('f').style.display='none'; Array.prototype.forEach.call(document.querySelectorAll('.hero,.step'),function(e){e.style.display='none';});
      $('done').style.display='block'; window.scrollTo(0,0);
    })
-   .catch(function(e){ show('Your payment went through, but we hit a problem saving the order: '+e.message+' Please call Dean at (314) 540-9472 with PayPal order '+(pp.id||'')+'.'); });
+   .catch(function(e){ show(pp.id ? 'Your payment went through, but we hit a problem saving the order: '+e.message+' Please call Dean at (314) 540-9472 with PayPal order '+pp.id+'.' : 'We could not send your order: '+e.message+' You have not been charged. Please try again, or call Dean at (314) 540-9472.'); });
 }
 if (!PAYPAL_CLIENT_ID){
-  $('paypal').innerHTML='<div class="note">Checkout opens soon. To order today, call or text Dean at (314) 540-9472.</div>';
+  $('paypal').innerHTML='<button type="button" class="paybtn" id="place">Place my order and pay with PayPal</button>';
+  $('payNote').textContent='Next step: you pay securely on PayPal. Your order goes to print as soon as the payment arrives.';
+  $('place').addEventListener('click', function(){
+    var p=problems(); show(p); if (p) return;
+    var btn=this; btn.disabled=true; btn.textContent='Sending your order...';
+    send({id:'',status:'AWAITING'}).then(function(){ btn.disabled=false; btn.textContent='Place my order and pay with PayPal'; });
+  });
 } else {
   var s=document.createElement('script');
   s.src='https://www.paypal.com/sdk/js?client-id='+encodeURIComponent(PAYPAL_CLIENT_ID)+'&currency=USD&intent=capture&disable-funding=paylater';
